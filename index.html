@@ -143,9 +143,6 @@ const CONFIG = {
 /* Estructura de capes del portal.
    Les capes sense `actiu: true` es mostren com a "Pendent" fins que se'ls afegeixi la dada. */
 const GRUPS = [
-  { nom: 'Límits administratius', obert: true, capes: [
-    { id: 'limit', nom: 'Límit municipal', actiu: true, tipus: 'Vectorial' }
-  ]},
   { nom: 'Infraestructura verda', capes: [
     { id: 'espais-verds',  nom: 'Espais verds',     font: 'Inventari superfícies verdes, Dep. Parcs i Jardins', any: '2021', tipus: 'Vectorial' },
     { id: 'arbrat',        nom: "Inventari d'arbrat", font: "Inventari d'arbrat, Dep. Parcs i Jardins", any: '2021', tipus: 'Vectorial' },
@@ -182,6 +179,10 @@ const GRUPS = [
       { id: 'exposicio',      nom: 'Exposició al verd', font: 'Mapa de coberta arbòria (CREAF)', any: '2022', tipus: 'Vectorial' },
       { id: 'visibilitat',    nom: 'Visibilitat del verd', font: 'Sense dades', any: '—', tipus: '—' }
     ]}
+  ]}
+,
+  { nom: 'Límits administratius', obert: true, capes: [
+    { id: 'limit', nom: 'Límit municipal', actiu: true, tipus: 'Vectorial' }
   ]}
 ];
 
