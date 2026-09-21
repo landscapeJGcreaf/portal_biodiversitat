@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portal de biodiversitat · Viladecans</title>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --tinta: #1d2b26;
+    --tinta-suau: #56655f;
+    --paper: #fbfcfa;
+    --linia: #d9e0dc;
+    --verd: #1f6f5c;
+    --verd-fosc: #164f42;
+    --ombra: 0 1px 2px rgba(0,0,0,.08), 0 4px 16px rgba(0,0,0,.08);
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body { font-family: "Public Sans", system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--tinta); }
+  #map { position: absolute; inset: 0; }
+
+  .panell {
+    position: absolute; top: 12px; left: 12px; z-index: 5;
+    width: 300px; max-width: calc(100vw - 24px); max-height: calc(100% - 60px);
+    background: var(--paper); border-radius: 8px; box-shadow: var(--ombra);
+    display: flex; flex-direction: column; overflow: hidden;
+  }
+  .capcalera { padding: 14px 16px 12px; border-bottom: 1px solid var(--linia); display: flex; gap: 10px; align-items: flex-start; }
+  .capcalera h1 { font-size: 17px; line-height: 1.25; margin: 0; font-weight: 600; }
+  .capcalera p { margin: 2px 0 0; font-size: 13px; color: var(--tinta-suau); }
+  .plega { margin-left: auto; border: 0; background: none; cursor: pointer; font-size: 18px; line-height: 1; color: var(--tinta-suau); padding: 2px 4px; border-radius: 4px; }
+  .plega:hover { background: #eef2ef; }
+  .cos { padding: 12px 16px 14px; overflow-y: auto; }
+  .panell.plegat .cos { display: none; }
+  .panell.plegat .capcalera { border-bottom: 0; }
+  h2 { font-size: 13px; font-weight: 600; margin: 0 0 8px; color: var(--tinta-suau); }
+
+  .capa { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+  .capa label { display: flex; align-items: center; gap: 8px; cursor: pointer; flex: 1; }
+  .capa input { accent-color: var(--verd); width: 16px; height: 16px; margin: 0; }
+  .info { border: 1px solid var(--linia); background: #fff; color: var(--tinta-suau); width: 22px; height: 22px; border-radius: 50%; font-size: 12px; cursor: pointer; line-height: 1; }
+  .info:hover, .info[aria-expanded="true"] { background: var(--verd); color: #fff; border-color: var(--verd); }
+  .meta { display: none; margin: 8px 0 0 24px; padding: 8px 10px; background: #f2f6f4; border-radius: 6px; font-size: 12.5px; line-height: 1.45; color: var(--tinta-suau); }
+  .meta.obert { display: block; }
+  .meta b { color: var(--tinta); font-weight: 500; }
+
+  .llegenda { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--linia); }
+  .llegenda div { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .mostra { width: 22px; height: 14px; border: 2.5px solid var(--verd); border-radius: 2px; background: rgba(31,111,92,.10); }
+
+  .bases { position: absolute; right: 12px; top: 12px; z-index: 5; display: flex; background: var(--paper); border-radius: 8px; box-shadow: var(--ombra); overflow: hidden; }
+  .bases button { border: 0; background: none; padding: 8px 12px; font: inherit; font-size: 13px; cursor: pointer; color: var(--tinta); }
+  .bases button + button { border-left: 1px solid var(--linia); }
+  .bases button:hover { background: #eef2ef; }
+  .bases button[aria-pressed="true"] { background: var(--verd); color: #fff; }
+
+  .coords { position: absolute; left: 12px; bottom: 12px; z-index: 5; background: rgba(251,252,250,.92); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: var(--tinta-suau); font-variant-numeric: tabular-nums; }
+
+  .estat { position: absolute; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(251,252,250,.85); font-size: 15px; text-align: center; padding: 24px; }
+  .estat.amagat { display: none; }
+  .estat.error { flex-direction: column; gap: 8px; }
+  .estat.error small { color: var(--tinta-suau); max-width: 460px; font-size: 13px; line-height: 1.5; }
+
+  :focus-visible { outline: 2px solid var(--verd-fosc); outline-offset: 2px; }
+  .maplibregl-ctrl-bottom-right { bottom: 4px; }
+
+  @media (max-width: 640px) {
+    .bases { top: auto; bottom: 44px; right: 12px; }
+    .panell { width: calc(100vw - 24px); }
+  }
+</style>
+</head>
+<body>
+
+<div id="map" role="application" aria-label="Mapa de Viladecans"></div>
+<div id="estat" class="estat">Carregant dades…</div>
+
+<section class="panell" id="panell" aria-label="Capes del mapa">
+  <div class="capcalera">
+    <div>
+      <h1>Portal de biodiversitat</h1>
+      <p>Viladecans</p>
+    </div>
+    <button class="plega" id="plega" aria-label="Plega o desplega el panell" aria-expanded="true">&minus;</button>
+  </div>
+  <div class="cos">
+    <h2>Capes</h2>
+    <div class="capa">
+      <label><input type="checkbox" id="chk-limit" checked> Límit municipal</label>
+      <button class="info" id="btn-info" aria-expanded="false" aria-controls="meta-limit" aria-label="Informació de la capa">i</button>
+    </div>
+    <div class="meta" id="meta-limit"></div>
+
+    <div class="llegenda">
+      <h2>Llegenda</h2>
+      <div><span class="mostra"></span> Límit del municipi de Viladecans</div>
+    </div>
+  </div>
+</section>
+
+<div class="bases" role="group" aria-label="Mapa base">
+  <button data-base="clar" aria-pressed="true">Clar</button>
+  <button data-base="topo" aria-pressed="false">Topo</button>
+  <button data-base="sat" aria-pressed="false">Sat</button>
+  <button data-base="cap" aria-pressed="false">Cap</button>
+</div>
+
+<div class="coords" id="coords">Lat: — | Lon: —</div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script>
+/* ---------- Configuració ---------- */
+const CONFIG = {
+  centre: [2.0125, 41.3155],
+  zoom: 12,
+  // 1) Si existeix aquest fitxer, s'utilitza (recomanat: límit oficial de l'ICGC).
+  fitxerLocal: 'data/limit_municipal.geojson',
+  // 2) Si no, es descarrega de forma automàtica d'OpenStreetMap (Nominatim).
+  consultaOSM: 'https://nominatim.openstreetmap.org/search?format=geojson&polygon_geojson=1&polygon_threshold=0.00005&limit=5&q=' +
+               encodeURIComponent('Viladecans, Baix Llobregat, Catalunya'),
+  metadades: {
+    local: {
+      titol: 'Límit municipal de Viladecans',
+      descripcio: 'Delimitació administrativa del municipi.',
+      font: 'A completar (p. ex. ICGC, Divisions administratives)',
+      llicencia: 'A completar'
+    },
+    osm: {
+      titol: 'Límit municipal de Viladecans',
+      descripcio: 'Delimitació administrativa del municipi.',
+      font: 'OpenStreetMap contributors',
+      llicencia: 'ODbL 1.0'
+    }
+  }
+};
+
+const BASES = {
+  clar: { tiles: ['https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'], attr: '© OpenStreetMap contributors © CARTO', max: 19 },
+  topo: { tiles: ['https://tile.opentopomap.org/{z}/{x}/{y}.png'], attr: '© OpenStreetMap contributors, SRTM | © OpenTopoMap (CC-BY-SA)', max: 17 },
+  sat:  { tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], attr: 'Imatges © Esri, Maxar, Earthstar Geographics', max: 19 }
+};
+
+/* ---------- Mapa ---------- */
+const style = { version: 8, sources: {}, layers: [] };
+for (const [id, b] of Object.entries(BASES)) {
+  style.sources['base-' + id] = { type: 'raster', tiles: b.tiles, tileSize: 256, maxzoom: b.max, attribution: b.attr };
+  style.layers.push({ id: 'base-' + id, type: 'raster', source: 'base-' + id, layout: { visibility: id === 'clar' ? 'visible' : 'none' } });
+}
+style.layers.unshift({ id: 'fons', type: 'background', paint: { 'background-color': '#eef1ee' } });
+
+const map = new maplibregl.Map({
+  container: 'map', style, center: CONFIG.centre, zoom: CONFIG.zoom, hash: true
+});
+map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
+map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
+
+/* ---------- Dades ---------- */
+const estat = document.getElementById('estat');
+
+function esPoligon(f) {
+  return f.geometry && (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon');
+}
+
+async function carregaLimit() {
+  // Primer, el fitxer local
+  try {
+    const r = await fetch(CONFIG.fitxerLocal);
+    if (r.ok) {
+      const gj = await r.json();
+      const f = (gj.features || []).find(esPoligon);
+      if (f) return { feature: f, font: 'local' };
+    }
+  } catch (e) { /* passem a la font alternativa */ }
+
+  // Alternativa: OpenStreetMap
+  const r = await fetch(CONFIG.consultaOSM, { headers: { 'Accept': 'application/json' } });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const gj = await r.json();
+  const f = (gj.features || []).find(esPoligon);
+  if (!f) throw new Error('No s\'ha trobat cap polígon');
+  return { feature: f, font: 'osm' };
+}
+
+function bbox(geom) {
+  let x0 = 180, y0 = 90, x1 = -180, y1 = -90;
+  const recorre = c => {
+    if (typeof c[0] === 'number') { x0 = Math.min(x0, c[0]); x1 = Math.max(x1, c[0]); y0 = Math.min(y0, c[1]); y1 = Math.max(y1, c[1]); }
+    else c.forEach(recorre);
+  };
+  recorre(geom.coordinates);
+  return [[x0, y0], [x1, y1]];
+}
+
+// Màscara: tot el món amb el municipi buidat, per atenuar l'exterior
+function mascara(geom) {
+  const poligons = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+  const forats = poligons.map(p => p[0]);
+  return {
+    type: 'Feature', properties: {},
+    geometry: { type: 'Polygon', coordinates: [[[-180, -85], [180, -85], [180, 85], [-180, 85], [-180, -85]], ...forats] }
+  };
+}
+
+function pintaMetadades(font) {
+  const m = CONFIG.metadades[font];
+  document.getElementById('meta-limit').innerHTML =
+    `<b>${m.titol}</b><br>${m.descripcio}<br><b>Font:</b> ${m.font}<br><b>Llicència:</b> ${m.llicencia}`;
+}
+
+map.on('load', async () => {
+  try {
+    const { feature, font } = await carregaLimit();
+    pintaMetadades(font);
+
+    map.addSource('limit', { type: 'geojson', data: feature });
+    map.addSource('limit-mascara', { type: 'geojson', data: mascara(feature.geometry) });
+
+    map.addLayer({ id: 'limit-mascara', type: 'fill', source: 'limit-mascara',
+      paint: { 'fill-color': '#16302a', 'fill-opacity': 0.28 } });
+    map.addLayer({ id: 'limit-farciment', type: 'fill', source: 'limit',
+      paint: { 'fill-color': '#1f6f5c', 'fill-opacity': 0.06 } });
+    map.addLayer({ id: 'limit-linia', type: 'line', source: 'limit',
+      layout: { 'line-join': 'round' },
+      paint: { 'line-color': '#1f6f5c', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 15, 3.5] } });
+
+    map.fitBounds(bbox(feature.geometry), { padding: 60, duration: 0 });
+    estat.classList.add('amagat');
+  } catch (e) {
+    console.error(e);
+    estat.classList.add('error');
+    estat.innerHTML = 'No s\'ha pogut carregar el límit municipal.' +
+      '<small>Desa el fitxer GeoJSON del límit de Viladecans a <code>data/limit_municipal.geojson</code> ' +
+      'i torna a carregar la pàgina.</small>';
+  }
+});
+
+/* ---------- Interfície ---------- */
+const capes = ['limit-mascara', 'limit-farciment', 'limit-linia'];
+document.getElementById('chk-limit').addEventListener('change', e => {
+  const v = e.target.checked ? 'visible' : 'none';
+  capes.forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', v));
+});
+
+const btnInfo = document.getElementById('btn-info');
+btnInfo.addEventListener('click', () => {
+  const obert = document.getElementById('meta-limit').classList.toggle('obert');
+  btnInfo.setAttribute('aria-expanded', obert);
+});
+
+const plega = document.getElementById('plega');
+plega.addEventListener('click', () => {
+  const plegat = document.getElementById('panell').classList.toggle('plegat');
+  plega.textContent = plegat ? '+' : '\u2212';
+  plega.setAttribute('aria-expanded', !plegat);
+});
+
+document.querySelectorAll('.bases button').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const triat = btn.dataset.base;
+    Object.keys(BASES).forEach(id => map.setLayoutProperty('base-' + id, 'visibility', id === triat ? 'visible' : 'none'));
+    document.querySelectorAll('.bases button').forEach(b => b.setAttribute('aria-pressed', b === btn));
+  });
+});
+
+map.on('mousemove', e => {
+  document.getElementById('coords').textContent =
+    `Lat: ${e.lngLat.lat.toFixed(5)} | Lon: ${e.lngLat.lng.toFixed(5)}`;
+});
+</script>
+</body>
+</html>
