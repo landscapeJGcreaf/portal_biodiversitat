@@ -138,10 +138,12 @@ const CONFIG = {
   }
 };
 
+// Servei de Mapa Base de l'ICGC (WMTS, gratuït i sense clau d'API)
+const ICGC = 'https://geoserveis.icgc.cat/servei/catalunya/mapa-base/wmts/';
 const BASES = {
-  clar: { tiles: ['https://basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png'], attr: '© OpenStreetMap contributors © CARTO', max: 19 },
-  topo: { tiles: ['https://tile.opentopomap.org/{z}/{x}/{y}.png'], attr: '© OpenStreetMap contributors, SRTM | © OpenTopoMap (CC-BY-SA)', max: 17 },
-  sat:  { tiles: ['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'], attr: 'Imatges © Esri, Maxar, Earthstar Geographics', max: 19 }
+  clar: { tiles: [ICGC + 'estandard-gris/MON3857NW/{z}/{x}/{y}.png'], attr: '© <a href="https://www.icgc.cat" target="_blank" rel="noopener">ICGC</a> | © OpenStreetMap contributors', max: 19 },
+  topo: { tiles: [ICGC + 'topografic/MON3857NW/{z}/{x}/{y}.png'],     attr: '© <a href="https://www.icgc.cat" target="_blank" rel="noopener">ICGC</a>', max: 19 },
+  sat:  { tiles: [ICGC + 'orto/MON3857NW/{z}/{x}/{y}.png'],           attr: 'Ortofoto © <a href="https://www.icgc.cat" target="_blank" rel="noopener">ICGC</a>', max: 19 }
 };
 
 /* ---------- Mapa ---------- */
@@ -153,7 +155,7 @@ for (const [id, b] of Object.entries(BASES)) {
 style.layers.unshift({ id: 'fons', type: 'background', paint: { 'background-color': '#eef1ee' } });
 
 const map = new maplibregl.Map({
-  container: 'map', style, center: CONFIG.centre, zoom: CONFIG.zoom, hash: true
+  container: 'map', style, center: CONFIG.centre, zoom: CONFIG.zoom, minZoom: 10, maxZoom: 19, hash: true
 });
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
