@@ -58,17 +58,16 @@
   .capa input { accent-color: var(--verd); width: 16px; height: 16px; margin: 1px 0 0; flex: none; }
   .capa.pendent label { cursor: default; color: #7d8a84; }
   .capa.pendent input { cursor: not-allowed; }
+  .opacitat { display: flex; align-items: center; gap: 8px; margin: 0 0 6px 24px; font-size: 12px; color: var(--tinta-suau); }
+  .opacitat[hidden] { display: none; }
+  .opacitat input[type="range"] { flex: 1; min-width: 0; accent-color: var(--verd); margin: 0; }
+  .opacitat output { min-width: 34px; text-align: right; font-variant-numeric: tabular-nums; }
   .pendent-tag { font-size: 11.5px; color: #7d8a84; white-space: nowrap; }
   .info { border: 1px solid var(--linia); background: #fff; color: var(--tinta-suau); width: 22px; height: 22px; border-radius: 50%; font-size: 12px; cursor: pointer; line-height: 1; flex: none; }
   .info:hover, .info[aria-expanded="true"] { background: var(--verd); color: #fff; border-color: var(--verd); }
-  .meta { display: none; margin: 2px 0 6px 24px; padding: 8px 10px; background: #f2f6f4; border-radius: 6px; font-size: 12.5px; line-height: 1.45; color: var(--tinta-suau); }
-  .meta.obert { display: block; }
-  .meta b { color: var(--tinta); font-weight: 500; }
 
-  .llegenda { margin: 6px 16px 0; padding-top: 12px; border-top: 1px solid var(--linia); }
-  .llegenda h2 { font-size: 13px; font-weight: 600; margin: 0 0 8px; color: var(--tinta-suau); }
-  .llegenda div { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-  .mostra { width: 22px; height: 14px; border: 2.5px solid var(--verd); border-radius: 2px; background: rgba(31,111,92,.10); }
+  .fila-llegenda { display: flex; align-items: center; gap: 8px; }
+  .mostra { flex: none; width: 22px; height: 14px; border: 2.5px solid var(--verd); border-radius: 2px; background: rgba(31,111,92,.10); }
 
   .bases { position: absolute; right: 12px; top: 12px; z-index: 5; display: flex; background: var(--paper); border-radius: 8px; box-shadow: var(--ombra); overflow: hidden; }
   .bases button { border: 0; background: none; padding: 8px 12px; font: inherit; font-size: 13px; cursor: pointer; color: var(--tinta); }
@@ -82,6 +81,49 @@
   .estat.amagat { display: none; }
   .estat.error { flex-direction: column; gap: 8px; }
   .estat.error small { color: var(--tinta-suau); max-width: 460px; font-size: 13px; line-height: 1.5; }
+
+  /* Fitxa de metadades */
+  .modal { position: fixed; inset: 0; z-index: 20; background: rgba(20,30,26,.45); display: flex; align-items: center; justify-content: center; padding: 16px; }
+  .modal[hidden] { display: none; }
+  .modal-caixa { width: min(680px, 100%); max-height: 88vh; overflow-y: auto; background: var(--paper); border-radius: 8px; box-shadow: var(--ombra); }
+  .modal-cap { position: sticky; top: 0; background: var(--paper); display: flex; gap: 12px; align-items: flex-start; padding: 16px 20px 12px; border-bottom: 1px solid var(--linia); }
+  .modal-cap h2 { margin: 0; font-size: 18px; line-height: 1.25; font-weight: 600; }
+  .modal-cap p { margin: 2px 0 0; font-size: 13px; color: var(--tinta-suau); }
+  .modal-tanca { margin-left: auto; border: 0; background: none; font-size: 18px; line-height: 1; cursor: pointer; color: var(--tinta-suau); padding: 4px 8px; border-radius: 4px; }
+  .modal-tanca:hover { background: #eef2ef; }
+  .modal-cos { padding: 4px 20px 20px; }
+  .modal-cos h3 { margin: 18px 0 6px; font-size: 14px; font-weight: 600; color: var(--verd-fosc); }
+  .modal-cos dl { margin: 0; display: grid; grid-template-columns: 170px 1fr; gap: 6px 14px; font-size: 13.5px; line-height: 1.45; }
+  .modal-cos dt { color: var(--tinta-suau); }
+  .modal-cos dd { margin: 0; overflow-wrap: anywhere; }
+  .modal-cos dd.buit { color: #9aa6a0; }
+  .modal-cos a { color: var(--verd); }
+  .modal-av { margin: 14px 0 0; font-size: 13px; color: var(--tinta-suau); }
+  @media (max-width: 560px) { .modal-cos dl { grid-template-columns: 1fr; gap: 0; } .modal-cos dd { margin-bottom: 8px; } }
+
+  /* Llegenda flotant de capes de dades */
+  .llegendes { position: absolute; left: 12px; bottom: 44px; z-index: 5; width: 270px; max-width: calc(100vw - 24px); display: flex; flex-direction: column; gap: 8px; }
+  .llegenda-flotant { background: var(--paper); border-radius: 8px; box-shadow: var(--ombra); padding: 12px 14px; font-size: 13px; }
+  .llegenda-flotant[hidden] { display: none; }
+  .llegenda-flotant h2 { margin: 0 0 8px; font-size: 13.5px; font-weight: 600; }
+  .llegenda-flotant .opcions { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+  .llegenda-flotant .opcions label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
+  .llegenda-flotant input[type="radio"] { accent-color: var(--verd); margin: 0; }
+  .rampa { height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.25); }
+  .rampa-etiquetes { display: flex; justify-content: space-between; margin-top: 3px; font-size: 12px; color: var(--tinta-suau); font-variant-numeric: tabular-nums; }
+  .llegenda-flotant .sense { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+  .mostra-transparent { width: 22px; height: 14px; border-radius: 2px; background: repeating-conic-gradient(#e3e7e5 0% 25%, #fff 0% 50%) 50% / 8px 8px; border: 1px solid rgba(0,0,0,.25); flex: none; }
+  .mostra-gris { width: 22px; height: 14px; border-radius: 2px; background: #c4c9c6; border: 1px solid rgba(0,0,0,.25); flex: none; }
+  .llegenda-flotant .nota { margin: 10px 0 0; font-size: 12px; line-height: 1.4; color: var(--tinta-suau); }
+  .llegenda-flotant .error { color: #9b2c1f; }
+  .maplibregl-popup-content { font-family: inherit; font-size: 13px; line-height: 1.45; padding: 12px 14px; border-radius: 8px; max-width: 280px; }
+  .popup-t { margin: 0 20px 6px 0; font-weight: 600; font-size: 14px; }
+  .popup-t span { display: block; font-weight: 400; font-size: 12px; color: var(--tinta-suau); }
+  .popup-sep { border: 0; border-top: 1px solid var(--linia); margin: 10px 0; }
+  .popup dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
+  .popup dt { color: var(--tinta-suau); }
+  .popup dd { margin: 0; }
+  @media (max-width: 640px) { .llegendes { bottom: 88px; } }
 
   :focus-visible { outline: 2px solid var(--verd-fosc); outline-offset: 2px; }
   .maplibregl-ctrl-bottom-right { bottom: 4px; }
@@ -107,10 +149,6 @@
   </div>
   <div class="cos">
     <div id="grups"></div>
-    <div class="llegenda">
-      <h2>Llegenda</h2>
-      <div><span class="mostra"></span> Límit del municipi de Viladecans</div>
-    </div>
   </div>
 </section>
 
@@ -121,7 +159,41 @@
   <button data-base="cap" aria-pressed="false">Cap</button>
 </div>
 
+<div class="llegendes">
+<div class="llegenda-flotant" id="llegenda-aliments" hidden>
+  <h2>Rendiment de la parcel·la</h2>
+  <div class="rampa" id="rampa-aliments"></div>
+  <div class="rampa-etiquetes" id="etiquetes-aliments"></div>
+  <div class="sense"><span class="mostra-gris"></span><span id="sense-aliments"></span></div>
+  <p class="nota" id="nota-aliments"></p>
+</div>
+<div class="llegenda-flotant" id="llegenda-biomassa" hidden>
+  <h2>Biomassa foliar (t/ha)</h2>
+  <div class="rampa" id="rampa-biomassa"></div>
+  <div class="rampa-etiquetes" id="etiquetes-biomassa"></div>
+  <div class="sense"><span class="mostra-transparent"></span><span>Sense biomassa (transparent)</span></div>
+  <p class="nota" id="nota-biomassa"></p>
+</div>
+<div class="llegenda-flotant" id="llegenda-limit">
+  <h2>Límit municipal</h2>
+  <div class="fila-llegenda"><span class="mostra"></span><span>Límit del municipi de Viladecans</span></div>
+</div>
+</div>
+
 <div class="coords" id="coords">Lat: — | Lon: —</div>
+
+<div class="modal" id="modal" hidden>
+  <div class="modal-caixa" role="dialog" aria-modal="true" aria-labelledby="modal-titol">
+    <div class="modal-cap">
+      <div>
+        <h2 id="modal-titol"></h2>
+        <p>Fitxa de metadades (ISO 19115)</p>
+      </div>
+      <button class="modal-tanca" id="modal-tanca" aria-label="Tanca la fitxa">&#10005;</button>
+    </div>
+    <div class="modal-cos" id="modal-cos"></div>
+  </div>
+</div>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script>
@@ -134,56 +206,155 @@ const CONFIG = {
   // 2) Si no, es descarrega d'OpenStreetMap (Nominatim).
   consultaOSM: 'https://nominatim.openstreetmap.org/search?format=geojson&polygon_geojson=1&polygon_threshold=0.00005&limit=5&q=' +
                encodeURIComponent('Viladecans, Baix Llobregat, Catalunya'),
-  metadadesLimit: {
-    local: { descripcio: 'Delimitació administrativa del municipi.', font: 'A completar (p. ex. ICGC, Divisions administratives)', llicencia: 'A completar' },
-    osm:   { descripcio: 'Delimitació administrativa del municipi.', font: 'OpenStreetMap contributors', llicencia: 'ODbL 1.0' }
-  }
+  // Fitxes de metadades ISO 19115 (una per capa)
+  fitxerMetadades: 'config/metadades.json'
 };
 
 /* Estructura de capes del portal.
    Les capes sense `actiu: true` es mostren com a "Pendent" fins que se'ls afegeixi la dada. */
 const GRUPS = [
-  { nom: 'Infraestructura verda', capes: [
-    { id: 'espais-verds',  nom: 'Espais verds',     font: 'Inventari superfícies verdes, Dep. Parcs i Jardins', any: '2021', tipus: 'Vectorial' },
-    { id: 'arbrat',        nom: "Inventari d'arbrat", font: "Inventari d'arbrat, Dep. Parcs i Jardins", any: '2021', tipus: 'Vectorial' },
-    { id: 'mapa-base-verd', nom: 'Mapa base del verd', font: 'Elaboració pròpia a partir de CHC 2018 (GEOVEG), MCSC 2020 (CREAF), Mapa de vegetació del Delta del Llobregat 2013 (CREAF) i cartografia de superfícies 2020 (Ajuntament de Viladecans)', any: '2021', tipus: 'Vectorial' }
-  ]},
-  { nom: 'Infraestructura verda i serveis ecosistèmics', capes: [
-    { id: 'habitats-interes', nom: "Hàbitats d'especial interès", font: 'Índex de biodiversitat singular AMB (CREAF)', any: '2018', tipus: 'Ràster' },
-    { id: 'cobertes-n3',  nom: 'Canvi de cobertes del sòl (N3)',  font: 'Mapa de Cobertes del Sòl de Catalunya MCSC cat. N3 (CREAF)',  any: '2009/2020', tipus: 'Ràster' },
-    { id: 'cobertes-n1f', nom: 'Canvi de cobertes del sòl (N1F)', font: 'Mapa de Cobertes del Sòl de Catalunya MCSC cat. N1F (CREAF)', any: '2009/2020', tipus: 'Ràster' }
-  ]},
-  { nom: 'Serveis ecosistèmics', subgrups: [
-    { nom: 'Suport', capes: [
-      { id: 'naturalitat-iv',     nom: 'Naturalitat de la infraestructura verda', font: "Elaboració pròpia a partir del mapa d'infraestructura verda", any: '2021', tipus: 'Vectorial' },
-      { id: 'naturalitat-arbrat', nom: "Naturalitat de l'arbrat", font: "Elaboració pròpia a partir de l'inventari d'arbrat de l'Ajuntament de Viladecans", any: '2021', tipus: 'Vectorial' },
-      { id: 'connectivitat',      nom: 'Connectivitat ecològica', font: 'Índex de Connectivitat Ecològica Terrestre (Minuartia i CREAF)', any: '2022', tipus: 'Ràster' },
-      { id: 'chc', nom: 'Hàbitats de Catalunya (CHC)', font: 'Cartografia Hàbitats de Catalunya CHC (GEOVEG)', any: '2011-2018', tipus: 'Vectorial' },
-      { id: 'hic', nom: "Hàbitats d'interès comunitari (HIC)", font: "Cartografia Hàbitats d'Interès Comunitari HIC (GEOVEG)", any: '2011-2018', tipus: 'Vectorial' }
-    ]},
-    { nom: 'Provisió', capes: [
-      { id: 'aliments',      nom: 'Aliments', font: 'Dades del visor SITMUN + complement amb dades SIGPAC', any: '2016', tipus: 'Ràster' },
-      { id: 'aigua-picma',   nom: "Qualitat de l'aigua superficial (llacunes i canals)", font: 'Mostreig de les aigües superficials PICMA: mostres trimestrals de paràmetres fisicoquímics (conductivitat, temperatura, oxigen, nitrats, amoni, fòsfor dissolt, clorofil·la, MES)', any: '2000-2024', tipus: 'Taula' },
-      { id: 'aigua-aqüifer', nom: "Qualitat de l'aqüífer", font: "Xarxa de qualitat de l'aqüífer superficial i profund (CUADLL)", any: '2000-2024', tipus: 'Taula' },
-      { id: 'medi-hidric',   nom: 'Qualitat de les masses d\'aigua', font: 'Índex de qualitat de les masses d\'aigua (fisicoquímics i biològics: macròfits, macroinvertebrats…). Dades del Consorci per a la protecció i gestió dels espais naturals del delta', any: '2007-2024', tipus: 'Taula' }
-    ]},
-    { nom: 'Regulació', capes: [
-      { id: 'reg-hidrica',  nom: 'Regulació hídrica', font: "Elaboració pròpia a partir del mapa d'escolament 2018 (CREAF) i actualització MCSC 2020", any: '2020', tipus: 'Ràster' },
-      { id: 'reg-microclima', nom: 'Regulació microclimàtica', font: 'Mapa Sky View Factor (Barcelona Regional)', any: '2020', tipus: 'Ràster' },
-      { id: 'biomassa-foliar', nom: 'Biomassa foliar', font: 'CREAF', any: '2016-2017', tipus: 'Ràster' },
-      { id: 'carboni-aeri', nom: 'Carboni aeri total', font: 'AMB', any: '2016-2017 (actualització 2024?)', tipus: 'Ràster' },
-      { id: 'pollinitzacio', nom: 'Pol·linització (lepidòpters)', font: 'Seguiment de lepidòpters cBMS i mBMS', any: 'Diverses dates', tipus: 'Llistat' }
-    ]},
-    { nom: 'Culturals', capes: [
-      { id: 'accessibilitat', nom: 'Accessibilitat al verd (300 m)', font: "Mapes d'accessibilitat al verd a una distància de 300 m (CREAF)", any: '2022', tipus: 'Vectorial' },
-      { id: 'exposicio',      nom: 'Exposició al verd', font: 'Mapa de coberta arbòria (CREAF)', any: '2022', tipus: 'Vectorial' },
-      { id: 'visibilitat',    nom: 'Visibilitat del verd', font: 'Sense dades', any: '—', tipus: '—' }
-    ]}
-  ]}
-,
-  { nom: 'Límits administratius', obert: true, capes: [
-    { id: 'limit', nom: 'Límit municipal', actiu: true, tipus: 'Vectorial' }
-  ]}
+  {
+    "nom": "Infraestructura verda",
+    "capes": [
+      {
+        "id": "espais-verds",
+        "nom": "Espais verds"
+      },
+      {
+        "id": "arbrat",
+        "nom": "Inventari d'arbrat"
+      },
+      {
+        "id": "mapa-base-verd",
+        "nom": "Mapa base del verd"
+      }
+    ]
+  },
+  {
+    "nom": "Infraestructura verda i serveis ecosistèmics",
+    "capes": [
+      {
+        "id": "habitats-interes",
+        "nom": "Hàbitats d'especial interès"
+      },
+      {
+        "id": "cobertes-n3",
+        "nom": "Canvi de cobertes del sòl (N3)"
+      },
+      {
+        "id": "cobertes-n1f",
+        "nom": "Canvi de cobertes del sòl (N1F)"
+      }
+    ]
+  },
+  {
+    "nom": "Serveis ecosistèmics",
+    "subgrups": [
+      {
+        "nom": "Suport",
+        "capes": [
+          {
+            "id": "naturalitat-iv",
+            "nom": "Naturalitat de la infraestructura verda"
+          },
+          {
+            "id": "naturalitat-arbrat",
+            "nom": "Naturalitat de l'arbrat"
+          },
+          {
+            "id": "connectivitat",
+            "nom": "Connectivitat ecològica"
+          },
+          {
+            "id": "chc",
+            "nom": "Hàbitats de Catalunya (CHC)"
+          },
+          {
+            "id": "hic",
+            "nom": "Hàbitats d'interès comunitari (HIC)"
+          }
+        ]
+      },
+      {
+        "nom": "Provisió",
+        "capes": [
+          {
+            "id": "aliments",
+            "nom": "Aliments (rendiment de la parcel·la)",
+            "actiu": true,
+            "inicial": false
+          },
+          {
+            "id": "aigua-picma",
+            "nom": "Qualitat de l'aigua superficial (llacunes i canals)"
+          },
+          {
+            "id": "aigua-aquifer",
+            "nom": "Qualitat de l'aqüífer"
+          },
+          {
+            "id": "medi-hidric",
+            "nom": "Qualitat de les masses d'aigua"
+          }
+        ]
+      },
+      {
+        "nom": "Regulació",
+        "capes": [
+          {
+            "id": "reg-hidrica",
+            "nom": "Regulació hídrica"
+          },
+          {
+            "id": "reg-microclima",
+            "nom": "Regulació microclimàtica"
+          },
+          {
+            "id": "biomassa-foliar",
+            "nom": "Biomassa foliar (t/ha)",
+            "actiu": true,
+            "inicial": false
+          },
+          {
+            "id": "carboni-aeri",
+            "nom": "Carboni aeri total"
+          },
+          {
+            "id": "pollinitzacio",
+            "nom": "Pol·linització (lepidòpters)"
+          }
+        ]
+      },
+      {
+        "nom": "Culturals",
+        "capes": [
+          {
+            "id": "accessibilitat",
+            "nom": "Accessibilitat al verd (300 m)"
+          },
+          {
+            "id": "exposicio",
+            "nom": "Exposició al verd"
+          },
+          {
+            "id": "visibilitat",
+            "nom": "Visibilitat del verd"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "nom": "Límits administratius",
+    "obert": true,
+    "capes": [
+      {
+        "id": "limit",
+        "nom": "Límit municipal",
+        "actiu": true
+      }
+    ]
+  }
 ];
 
 // Servei de Mapa Base de l'ICGC (WMTS, gratuït i sense clau d'API)
@@ -198,16 +369,17 @@ const BASES = {
 /* ================= Panell de capes ================= */
 function htmlCapa(c) {
   const pendent = !c.actiu;
-  const meta = c.id === 'limit'
-    ? ''  // s'omple quan es carreguin les dades
-    : `<b>Font:</b> ${c.font}<br><b>Any:</b> ${c.any}<br><b>Tipus:</b> ${c.tipus}<br><b>Estat:</b> pendent d'incorporar al visor`;
   return `
     <div class="capa${pendent ? ' pendent' : ''}">
-      <label><input type="checkbox" id="chk-${c.id}" ${pendent ? 'disabled' : 'checked'}> <span>${c.nom}</span></label>
+      <label><input type="checkbox" id="chk-${c.id}" ${pendent ? 'disabled' : (c.inicial === false ? '' : 'checked')}> <span>${c.nom}</span></label>
       ${pendent ? '<span class="pendent-tag">Pendent</span>' : ''}
-      <button class="info" data-meta="meta-${c.id}" aria-expanded="false" aria-controls="meta-${c.id}" aria-label="Informació de la capa ${c.nom}">i</button>
+      <button class="info" data-capa="${c.id}" aria-haspopup="dialog" aria-label="Metadades de la capa ${c.nom}">i</button>
     </div>
-    <div class="meta" id="meta-${c.id}">${meta}</div>`;
+    ${pendent ? '' : `<div class="opacitat" id="op-${c.id}"${c.inicial === false ? ' hidden' : ''}>
+      <span>Opacitat</span>
+      <input type="range" min="0" max="100" step="5" value="100" data-opacitat="${c.id}" aria-label="Opacitat de la capa ${c.nom}">
+      <output>100%</output>
+    </div>`}`;
 }
 function htmlGrup(g, nivell) {
   const cos = (g.capes || []).map(htmlCapa).join('') + (g.subgrups || []).map(s => htmlGrup(s, nivell + 1)).join('');
@@ -230,6 +402,7 @@ map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 
 /* ================= Límit municipal ================= */
 const estat = document.getElementById('estat');
+let fontLimit = null;
 const esPoligon = f => f.geometry && (f.geometry.type === 'Polygon' || f.geometry.type === 'MultiPolygon');
 
 async function carregaLimit() {
@@ -268,9 +441,7 @@ function mascara(geom) {
 map.on('load', async () => {
   try {
     const { feature, font } = await carregaLimit();
-    const m = CONFIG.metadadesLimit[font];
-    document.getElementById('meta-limit').innerHTML =
-      `${m.descripcio}<br><b>Font:</b> ${m.font}<br><b>Llicència:</b> ${m.llicencia}`;
+    fontLimit = font;
 
     map.addSource('limit', { type: 'geojson', data: feature });
     map.addSource('limit-mascara', { type: 'geojson', data: mascara(feature.geometry) });
@@ -279,6 +450,7 @@ map.on('load', async () => {
     map.addLayer({ id: 'limit-linia', type: 'line', source: 'limit', layout: { 'line-join': 'round' },
       paint: { 'line-color': '#1f6f5c', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 15, 3.5] } });
 
+    aplicaOpacitat('limit');
     map.fitBounds(bbox(feature.geometry), { padding: 60, duration: 0 });
     estat.classList.add('amagat');
   } catch (e) {
@@ -293,14 +465,9 @@ map.on('load', async () => {
 document.getElementById('chk-limit').addEventListener('change', e => {
   const v = e.target.checked ? 'visible' : 'none';
   ['limit-mascara', 'limit-farciment', 'limit-linia'].forEach(id => map.getLayer(id) && map.setLayoutProperty(id, 'visibility', v));
+  document.getElementById('llegenda-limit').hidden = !e.target.checked;   // la llegenda només es veu amb la capa activada
 });
 
-document.querySelectorAll('.info').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const obert = document.getElementById(btn.dataset.meta).classList.toggle('obert');
-    btn.setAttribute('aria-expanded', obert);
-  });
-});
 
 const plega = document.getElementById('plega');
 plega.addEventListener('click', () => {
@@ -320,6 +487,349 @@ document.querySelectorAll('.bases button').forEach(btn => {
 map.on('mousemove', e => {
   document.getElementById('coords').textContent = `Lat: ${e.lngLat.lat.toFixed(5)} | Lon: ${e.lngLat.lng.toFixed(5)}`;
 });
+
+/* ================= Aliments: rendiment dels cultius ================= */
+const ALIMENTS = {
+  url: 'data/cultius_dun2024.geojson',
+  taula: 'data/produccions_viladecans.csv',   // rendiment (kg/ha) i font de cada cultiu
+  ramp: ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],   // vermell → verd
+  gris: '#c4c9c6',
+  variables: {
+    sup: {
+      camp: 'rend_sup',
+      valor: ['get', 'rend_sup'],
+      parades: [1, 25, 75, 155, 300],
+      sense: 'Guaret o sense dada',
+      nota: "Rendiment de cada parcel·la a partir del rendiment per hectàrea del cultiu a la comarca (camp rend_sup). Depèn de la superfície: no és comparable entre parcel·les de mida diferent."
+    }
+  }
+};
+
+function colorAliments(v) {
+  const interp = ['interpolate', ['linear'], v.valor];
+  v.parades.forEach((p, i) => interp.push(p, ALIMENTS.ramp[i]));
+  return ['case',
+    ['all', ['==', ['typeof', ['get', v.camp]], 'number'], ['>', ['get', v.camp], 0]],
+    interp,
+    ALIMENTS.gris];
+}
+
+let fontsRendiment = {};   // cultiu normalitzat -> font del rendiment
+const normCultiu = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().trim();
+function llegeixCSV(text) {
+  const files = []; let fila = [], camp = '', cita = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (cita) { if (c === '"' && text[i + 1] === '"') { camp += '"'; i++; } else if (c === '"') cita = false; else camp += c; }
+    else if (c === '"') cita = true;
+    else if (c === ',') { fila.push(camp); camp = ''; }
+    else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; fila.push(camp); camp = ''; if (fila.some(x => x !== '')) files.push(fila); fila = []; }
+    else camp += c;
+  }
+  if (camp !== '' || fila.length) { fila.push(camp); files.push(fila); }
+  const [cap, ...dades] = files;
+  return dades.map(f => Object.fromEntries(cap.map((k, i) => [k.trim(), (f[i] || '').trim()])));
+}
+
+let alimentsEstat = 'pendent';   // pendent | carregant | llest | error
+const alimentsVar = 'sup';
+
+function pintaLlegendaAliments() {
+  const v = ALIMENTS.variables[alimentsVar];
+  const n = v.parades.length;
+  document.getElementById('rampa-aliments').style.background =
+    'linear-gradient(to right, ' + ALIMENTS.ramp.join(', ') + ')';
+  document.getElementById('etiquetes-aliments').innerHTML =
+    v.parades.map((p, i) => '<span>' + (i === n - 1 ? '≥ ' : '') + p + '</span>').join('');
+  document.getElementById('sense-aliments').textContent = v.sense;
+  const nota = document.getElementById('nota-aliments');
+  nota.className = 'nota';
+  nota.textContent = v.nota;
+}
+
+function textPopup(p) {
+  const num = (x, d) => (typeof x === 'number' ? x.toLocaleString('ca-ES', { maximumFractionDigits: d }) : '—');
+  const reg = p.Seca_Regad === 'R' ? 'Regadiu' : p.Seca_Regad === 'S' ? 'Secà' : (p.Seca_Regad || '—');
+  const rows = [
+    ['Grup', p.Grup], ['Varietat', p.Varietat], ['Regadiu', reg + (p.Sist_Regad ? ' (' + p.Sist_Regad.toLowerCase() + ')' : '')],
+    ['Superfície', num(p.HA, 2) + ' ha'],
+    ['Rend. del cultiu', typeof p.rendiment_ === 'number' ? num(p.rendiment_ / 1000, 1) + ' t/ha' : '—'],
+    ['Rend. parcel·la', num(p.rend_sup, 1)],
+    ['Font del rendiment', fontsRendiment[normCultiu(p.Cultiu)]],
+    ['Campanya', p.Campanya]
+  ];
+  return '<div class="popup"><p class="popup-t">' + esc(p.Cultiu) + '<span>' + esc(p.Municipi) + '</span></p><dl>' +
+    rows.filter(r => r[1] !== undefined).map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1] ?? '—') + '</dd>').join('') + '</dl></div>';
+}
+
+async function carregaAliments() {
+  alimentsEstat = 'carregant';
+  try {
+    const r = await fetch(ALIMENTS.url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const gj = await r.json();
+    try {   // la taula només aporta la font: si falla, el mapa funciona igual
+      const rt = await fetch(ALIMENTS.taula);
+      if (rt.ok) llegeixCSV(await rt.text()).forEach(f => { fontsRendiment[normCultiu(f.cultiu)] = f.font; });
+    } catch (e) { console.warn('Taula de rendiments no disponible:', e); }
+    map.addSource('aliments', { type: 'geojson', data: gj });
+    const abans = map.getLayer('limit-linia') ? 'limit-linia' : undefined;
+    map.addLayer({ id: 'aliments-farciment', type: 'fill', source: 'aliments',
+      paint: { 'fill-color': colorAliments(ALIMENTS.variables[alimentsVar]), 'fill-opacity': 0.88 } }, abans);
+    map.addLayer({ id: 'aliments-linia', type: 'line', source: 'aliments',
+      paint: { 'line-color': 'rgba(30,40,35,0.55)', 'line-width': 0.5 } }, abans);
+
+    aplicaOpacitat('aliments');
+    alimentsEstat = 'llest';
+  } catch (e) {
+    console.error('Aliments:', e);
+    alimentsEstat = 'error';
+    const nota = document.getElementById('nota-aliments');
+    nota.className = 'nota error';
+    nota.textContent = "No s'ha pogut carregar data/cultius_dun2024.geojson. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+  }
+}
+
+async function actualitzaAliments() {
+  const on = document.getElementById('chk-aliments').checked;
+  const llegenda = document.getElementById('llegenda-aliments');
+  llegenda.hidden = !on;
+  if (on) pintaLlegendaAliments();
+  if (on && (alimentsEstat === 'pendent' || alimentsEstat === 'error')) await carregaAliments();
+  if (alimentsEstat === 'llest') {
+    const v = document.getElementById('chk-aliments').checked ? 'visible' : 'none';
+    ['aliments-farciment', 'aliments-linia'].forEach(id => map.setLayoutProperty(id, 'visibility', v));
+  }
+  if (alimentsEstat === 'error') { document.getElementById('nota-aliments').className = 'nota error'; }
+}
+
+document.getElementById('chk-aliments').addEventListener('change', actualitzaAliments);
+
+/* ================= Biomassa foliar ================= */
+const BIOMASSA = {
+  url: 'data/bf_2016_2017.png',
+  graella: 'data/bf_2016_2017.json',   // valors originals per consultar-los amb un clic (scripts/tif_a_png.py --json)
+  nom: 'Biomassa foliar', unitat: 't/ha',
+  // Cantons (lon, lat): dalt-esquerra, dalt-dreta, baix-dreta, baix-esquerra. Els genera scripts/tif_a_png.py
+  coordenades: [[1.9879482380393818, 41.33824180415864], [2.074704113239408, 41.33824180415864], [2.074704113239408, 41.26997160053647], [1.9879482380393818, 41.26997160053647]],
+  ramp: ['#ffffcc', '#c2e699', '#78c679', '#31a354', '#006837'],
+  parades: [1, 2, 3.5, 5, 7]
+};
+let biomassaEstat = 'pendent';
+let graellaBiomassa = null;
+
+// lon/lat (graus) -> ETRS89 / UTM 31N (E, N), sèrie de Krüger. Necessari per localitzar el píxel del ràster.
+const UTM31 = (() => {
+  const a = 6378137, f = 1 / 298.257222101, k0 = 0.9996, lon0 = 3 * Math.PI / 180, E0 = 500000;
+  const n = f / (2 - f), A = a / (1 + n) * (1 + n * n / 4 + Math.pow(n, 4) / 64);
+  const alfa = [n / 2 - 2 * n * n / 3 + 5 * Math.pow(n, 3) / 16, 13 * n * n / 48 - 3 * Math.pow(n, 3) / 5, 61 * Math.pow(n, 3) / 240];
+  const e = 2 * Math.sqrt(n) / (1 + n);
+  return (lon, lat) => {
+    const lam = lon * Math.PI / 180 - lon0, phi = lat * Math.PI / 180;
+    const t = Math.sinh(Math.atanh(Math.sin(phi)) - e * Math.atanh(e * Math.sin(phi)));
+    const xi0 = Math.atan2(t, Math.cos(lam)), eta0 = Math.atanh(Math.sin(lam) / Math.sqrt(1 + t * t));
+    let xi = xi0, eta = eta0;
+    alfa.forEach((al, j) => { const m = 2 * (j + 1); xi += al * Math.sin(m * xi0) * Math.cosh(m * eta0); eta += al * Math.cos(m * xi0) * Math.sinh(m * eta0); });
+    return [E0 + k0 * A * eta, k0 * A * xi];
+  };
+})();
+
+async function carregaGraellaBiomassa() {
+  try {
+    const r = await fetch(BIOMASSA.graella);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const g = await r.json();
+    const d = new Float32Array(g.amplada * g.alcada);
+    for (let k = 0; k < g.i.length; k++) d[g.i[k]] = g.v[k];
+    graellaBiomassa = { ...g, d };
+  } catch (e) { console.warn('Graella de biomassa no disponible:', e); }
+}
+
+// Valor del píxel sota un punt: un número (>0), 0 (dins l'extensió però sense biomassa) o null (fora o sense graella)
+function valorBiomassa(lngLat) {
+  if (!graellaBiomassa) return null;
+  const g = graellaBiomassa, [E, N] = UTM31(lngLat.lng, lngLat.lat);
+  const col = Math.floor((E - g.x0) / g.pixel), fila = Math.floor((g.y0 - N) / g.pixel);
+  if (col < 0 || col >= g.amplada || fila < 0 || fila >= g.alcada) return null;
+  return g.d[fila * g.amplada + col];
+}
+
+function textBiomassa(v) {
+  const cos = v > 0
+    ? '<dl><dt>Valor</dt><dd>' + v.toLocaleString('ca-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + BIOMASSA.unitat + '</dd></dl>'
+    : '<dl><dt>Valor</dt><dd>Sense biomassa</dd></dl>';
+  return '<div class="popup"><p class="popup-t">' + BIOMASSA.nom + '</p>' + cos + '</div>';
+}
+
+// Cursor en forma de fletxa quan el punter és sobre alguna cosa clicable (parcel·la o píxel amb dada);
+// a la resta del mapa es manté la mà per arrossegar.
+map.on('mousemove', e => {
+  let sobre = false;
+  if (document.getElementById('chk-aliments').checked && map.getLayer('aliments-farciment')) {
+    sobre = map.queryRenderedFeatures(e.point, { layers: ['aliments-farciment'] }).length > 0;
+  }
+  if (!sobre && document.getElementById('chk-biomassa-foliar').checked) sobre = valorBiomassa(e.lngLat) > 0;
+  map.getCanvas().style.cursor = sobre ? 'default' : '';
+});
+
+// Un sol popup per clic, amb la informació de totes les capes visibles sota el punter
+map.on('click', e => {
+  const parts = [];
+  if (document.getElementById('chk-aliments').checked && map.getLayer('aliments-farciment')) {
+    const f = map.queryRenderedFeatures(e.point, { layers: ['aliments-farciment'] });
+    if (f.length) parts.push(textPopup(f[0].properties));
+  }
+  if (document.getElementById('chk-biomassa-foliar').checked) {
+    const v = valorBiomassa(e.lngLat);
+    if (v > 0 || (v === 0 && parts.length === 0)) parts.push(textBiomassa(v));
+  }
+  if (parts.length) {
+    new maplibregl.Popup({ maxWidth: '280px' }).setLngLat(e.lngLat)
+      .setHTML(parts.join('<hr class="popup-sep">')).addTo(map);
+  }
+});
+
+function pintaLlegendaBiomassa() {
+  const n = BIOMASSA.parades.length;
+  document.getElementById('rampa-biomassa').style.background = 'linear-gradient(to right, ' + BIOMASSA.ramp.join(', ') + ')';
+  document.getElementById('etiquetes-biomassa').innerHTML =
+    BIOMASSA.parades.map((p, i) => '<span>' + (i === n - 1 ? '≥ ' : '') + p + '</span>').join('');
+  const nota = document.getElementById('nota-biomassa');
+  nota.className = 'nota';
+  nota.textContent = 'Biomassa foliar 2016-2017, en tones per hectàrea (píxels de 20 m).';
+}
+
+function actualitzaBiomassa() {
+  const chk = document.getElementById('chk-biomassa-foliar');
+  document.getElementById('llegenda-biomassa').hidden = !chk.checked;
+  if (chk.checked) pintaLlegendaBiomassa();
+  if (chk.checked && biomassaEstat === 'pendent') {
+    map.addSource('biomassa', { type: 'image', url: BIOMASSA.url, coordinates: BIOMASSA.coordenades });
+    const abans = map.getLayer('aliments-farciment') ? 'aliments-farciment' : (map.getLayer('limit-linia') ? 'limit-linia' : undefined);
+    map.addLayer({ id: 'biomassa-raster', type: 'raster', source: 'biomassa',
+      paint: { 'raster-opacity': 0.85, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } }, abans);
+    biomassaEstat = 'llest';
+    aplicaOpacitat('biomassa-foliar');
+    carregaGraellaBiomassa();
+  }
+  if (biomassaEstat === 'llest') map.setLayoutProperty('biomassa-raster', 'visibility', chk.checked ? 'visible' : 'none');
+}
+document.getElementById('chk-biomassa-foliar').addEventListener('change', actualitzaBiomassa);
+map.on('error', e => {
+  if (e.sourceId !== 'biomassa') return;
+  const nota = document.getElementById('nota-biomassa');
+  nota.className = 'nota error';
+  nota.textContent = "No s'ha pogut carregar data/bf_2016_2017.png. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+});
+
+/* ================= Opacitat de les capes ================= */
+// Cada capa del panell controla les seves capes de MapLibre; `base` és l'opacitat a 100%.
+const OPACITAT = {
+  limit: [
+    { id: 'limit-mascara',   prop: 'fill-opacity', base: 0.28 },
+    { id: 'limit-farciment', prop: 'fill-opacity', base: 0.06 },
+    { id: 'limit-linia',     prop: 'line-opacity', base: 1 }
+  ],
+  'biomassa-foliar': [
+    { id: 'biomassa-raster', prop: 'raster-opacity', base: 0.85 }
+  ],
+  aliments: [
+    { id: 'aliments-farciment', prop: 'fill-opacity', base: 0.88 },
+    { id: 'aliments-linia',     prop: 'line-opacity', base: 1 }
+  ]
+};
+const estatOpacitat = {};   // capa -> 0..1 (per aplicar-la també a les capes que es creen més tard)
+
+function aplicaOpacitat(capa) {
+  const v = estatOpacitat[capa] ?? 1;
+  (OPACITAT[capa] || []).forEach(l => { if (map.getLayer(l.id)) map.setPaintProperty(l.id, l.prop, l.base * v); });
+}
+
+document.querySelectorAll('input[data-opacitat]').forEach(rang => {
+  rang.addEventListener('input', () => {
+    estatOpacitat[rang.dataset.opacitat] = rang.value / 100;
+    rang.nextElementSibling.textContent = rang.value + '%';
+    aplicaOpacitat(rang.dataset.opacitat);
+  });
+});
+
+// La barra només es veu quan la capa està activada
+document.querySelectorAll('.capa input[type="checkbox"]:not(:disabled)').forEach(chk => {
+  chk.addEventListener('change', () => {
+    const fila = document.getElementById('op-' + chk.id.replace('chk-', ''));
+    if (fila) fila.hidden = !chk.checked;
+  });
+});
+
+/* ================= Fitxa de metadades ISO 19115 ================= */
+const SECCIONS = [
+  ['Identificació', [['titol', 'Títol'], ['resum', 'Resum'], ['categoriaTematica', 'Categoria temàtica'], ['idioma', 'Idioma del recurs']]],
+  ['Data i estat', [['dataReferencia', 'Data de referència'], ['tipusData', 'Tipus de data'], ['estat', 'Estat'], ['frequenciaActualitzacio', "Freqüència d'actualització"]]],
+  ['Representació espacial', [['tipusRepresentacio', 'Tipus'], ['format', 'Format'], ['sistemaReferencia', 'Sistema de referència'], ['resolucio', 'Escala / resolució'], ['extensio', 'Extensió geogràfica']]],
+  ['Procedència', [['procedencia', 'Procedència de les dades']]],
+  ['Restriccions', [['llicencia', 'Llicència'], ['restriccionsUs', "Restriccions d'ús"]]],
+  ['Contacte responsable', [['organitzacio', 'Organització'], ['persona', 'Persona de contacte'], ['email', 'Correu electrònic'], ['rol', 'Rol']]],
+  ['Metadades', [['dataMetadades', 'Data de les metadades'], ['idiomaMetadades', 'Idioma de les metadades'], ['estandard', 'Estàndard']]]
+];
+
+const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+let METADADES = null;   // null = encara no carregat, false = error
+async function carregaMetadades() {
+  try {
+    const r = await fetch(CONFIG.fitxerMetadades);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    METADADES = await r.json();
+  } catch (e) { console.error('Metadades:', e); METADADES = false; }
+}
+const promesaMeta = carregaMetadades();
+
+function fitxa(id) {
+  const capa = (METADADES.capes || {})[id] || {};
+  const f = { ...(METADADES._defecte || {}), ...capa };
+  if (id === 'limit' && fontLimit === 'osm') {
+    f.procedencia = "Descarregat d'OpenStreetMap mentre no hi hagi el fitxer local data/limit_municipal.geojson.";
+    f.llicencia = f.llicencia || 'ODbL 1.0 (OpenStreetMap contributors)';
+  }
+  return f;
+}
+
+function htmlFitxa(f) {
+  const seccions = SECCIONS.map(([titol, camps]) => {
+    const files = camps.map(([k, etiqueta]) => {
+      const v = f[k];
+      return v ? `<dt>${etiqueta}</dt><dd>${esc(v)}</dd>` : `<dt>${etiqueta}</dt><dd class="buit">—</dd>`;
+    }).join('');
+    return `<h3>${titol}</h3><dl>${files}</dl>`;
+  }).join('');
+  const enllacos = (f.enllacos || []).filter(e => /^https?:\/\//.test(e.url))
+    .map(e => `<dd><a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.text || e.url)}</a></dd>`).join('');
+  return seccions + (enllacos ? `<h3>Enllaços</h3><dl><dt>Recursos en línia</dt>${enllacos}</dl>` : '');
+}
+
+const modal = document.getElementById('modal');
+let obridor = null;
+async function obreFitxa(id, nom, boto) {
+  obridor = boto;
+  document.getElementById('modal-titol').textContent = nom;
+  document.getElementById('modal-cos').innerHTML = '<p class="modal-av">Carregant…</p>';
+  modal.hidden = false;
+  document.getElementById('modal-tanca').focus();
+  await promesaMeta;
+  document.getElementById('modal-cos').innerHTML = METADADES
+    ? htmlFitxa(fitxa(id))
+    : '<p class="modal-av">No s\'ha pogut carregar <code>config/metadades.json</code>. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local (p. ex. <code>python3 -m http.server</code>).</p>';
+}
+function tancaFitxa() { modal.hidden = true; if (obridor) obridor.focus(); }
+
+document.querySelectorAll('.info').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const nom = btn.closest('.capa').querySelector('label span').textContent;
+    obreFitxa(btn.dataset.capa, nom, btn);
+  });
+});
+document.getElementById('modal-tanca').addEventListener('click', tancaFitxa);
+modal.addEventListener('click', e => { if (e.target === modal) tancaFitxa(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) tancaFitxa(); });
 </script>
 </body>
 </html>
