@@ -127,6 +127,7 @@
 
   :focus-visible { outline: 2px solid var(--verd-fosc); outline-offset: 2px; }
   .maplibregl-ctrl-bottom-right { bottom: 4px; }
+  .maplibregl-ctrl-group button svg { display: block; margin: 0 auto; }
 
   @media (max-width: 640px) {
     .bases { top: auto; bottom: 44px; right: 12px; }
@@ -400,6 +401,26 @@ const map = new maplibregl.Map({
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
 map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
 
+// Botó per tornar a la vista inicial (extensió del límit municipal si s'ha pogut carregar, si no el centre i zoom de CONFIG)
+class BotoInici {
+  onAdd(m) {
+    this._map = m;
+    this._div = document.createElement('div');
+    this._div.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+    this._div.innerHTML = '<button type="button" aria-label="Torna a la vista inicial" title="Torna a la vista inicial">' +
+      '<svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M4 8.5 10 4l6 4.5"/><path d="M5.5 7.3V16h9V7.3"/><path d="M8 16v-4h4v4"/></svg></button>';
+    this._div.querySelector('button').addEventListener('click', () => {
+      if (extensioInicial) m.fitBounds(extensioInicial, { padding: 60 });
+      else m.easeTo({ center: CONFIG.centre, zoom: CONFIG.zoom });
+    });
+    return this._div;
+  }
+  onRemove() { this._div.remove(); }
+}
+let extensioInicial = null;   // s'omple quan es carrega el límit municipal
+map.addControl(new BotoInici(), 'bottom-right');
+
 /* ================= Límit municipal ================= */
 const estat = document.getElementById('estat');
 let fontLimit = null;
@@ -451,7 +472,8 @@ map.on('load', async () => {
       paint: { 'line-color': '#1f6f5c', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 15, 3.5] } });
 
     aplicaOpacitat('limit');
-    map.fitBounds(bbox(feature.geometry), { padding: 60, duration: 0 });
+    extensioInicial = bbox(feature.geometry);
+    map.fitBounds(extensioInicial, { padding: 60, duration: 0 });
     estat.classList.add('amagat');
   } catch (e) {
     console.error(e);
