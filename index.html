@@ -127,6 +127,8 @@
 
   :focus-visible { outline: 2px solid var(--verd-fosc); outline-offset: 2px; }
   .maplibregl-ctrl-bottom-right { bottom: 4px; }
+  /* Barra d'escala centrada, sota el mapa */
+  .maplibregl-ctrl-bottom-left { left: 50%; right: auto; transform: translateX(-50%); bottom: 4px; }
   .maplibregl-ctrl-group button svg { display: block; margin: 0 auto; }
 
   @media (max-width: 640px) {
@@ -399,7 +401,7 @@ const map = new maplibregl.Map({
   container: 'map', style, center: CONFIG.centre, zoom: CONFIG.zoom, minZoom: 10, maxZoom: 19, hash: true
 });
 map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-right');
-map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-right');
+map.addControl(new maplibregl.ScaleControl({ unit: 'metric' }), 'bottom-left');   // recentrada per CSS (.maplibregl-ctrl-bottom-left)
 
 // Botó per tornar a la vista inicial (extensió del límit municipal si s'ha pogut carregar, si no el centre i zoom de CONFIG)
 class BotoInici {
