@@ -177,6 +177,12 @@
   <div class="sense"><span class="mostra-transparent"></span><span>Sense biomassa (transparent)</span></div>
   <p class="nota" id="nota-biomassa"></p>
 </div>
+<div class="llegenda-flotant" id="llegenda-connectivitat" hidden>
+  <h2>Connectivitat ecològica (ICT)</h2>
+  <div class="rampa" id="rampa-connectivitat"></div>
+  <div class="rampa-etiquetes" id="etiquetes-connectivitat"></div>
+  <p class="nota" id="nota-connectivitat"></p>
+</div>
 <div class="llegenda-flotant" id="llegenda-limit">
   <h2>Límit municipal</h2>
   <div class="fila-llegenda"><span class="mostra"></span><span>Límit del municipi de Viladecans</span></div>
@@ -266,7 +272,9 @@ const GRUPS = [
           },
           {
             "id": "connectivitat",
-            "nom": "Connectivitat ecològica"
+            "nom": "Connectivitat ecològica (ICT)",
+            "actiu": true,
+            "inicial": false
           },
           {
             "id": "chc",
@@ -338,10 +346,6 @@ const GRUPS = [
           {
             "id": "exposicio",
             "nom": "Exposició al verd"
-          },
-          {
-            "id": "visibilitat",
-            "nom": "Visibilitat del verd"
           }
         ]
       }
@@ -512,6 +516,84 @@ map.on('mousemove', e => {
   document.getElementById('coords').textContent = `Lat: ${e.lngLat.lat.toFixed(5)} | Lon: ${e.lngLat.lng.toFixed(5)}`;
 });
 
+/* ================= Connectivitat ecològica (ICT) ================= */
+const ICT = {
+  url: 'data/ict_2022.png',
+  graella: 'data/ict_2022.json',
+  nom: 'Connectivitat ecològica (ICT)', unitat: '',
+  ramp: ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641'],   // vermell (baixa) -> verd (alta)
+  parades: [0.7, 1.5, 2.3, 3.0, 3.7]
+};
+let ictEstat = 'pendent';
+let graellaICT = null;
+
+async function carregaGraellaICT() {
+  try {
+    const r = await fetch(ICT.graella);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const g = await r.json();
+    const d = new Float32Array(g.amplada * g.alcada);
+    for (let k = 0; k < g.i.length; k++) d[g.i[k]] = g.v[k];
+    graellaICT = { ...g, d };
+  } catch (e) { console.warn('Graella del ICT no disponible:', e); }
+}
+
+// Valor del píxel sota un punt. Admet graelles en EPSG:25831 (metres, via UTM31) i EPSG:4326 (graus, directe).
+function valorGraella(g, lngLat) {
+  if (!g) return null;
+  let x, y;
+  if (g.epsg === 4326) { x = lngLat.lng; y = lngLat.lat; }
+  else [x, y] = UTM31(lngLat.lng, lngLat.lat);
+  const col = Math.floor((x - g.x0) / g.px), fila = Math.floor((g.y0 - y) / g.py);
+  if (col < 0 || col >= g.amplada || fila < 0 || fila >= g.alcada) return null;
+  return g.d[fila * g.amplada + col];
+}
+function valorICT(lngLat) {
+  const v = valorGraella(graellaICT, lngLat);
+  return v === 0 ? null : v;   // 0 vol dir cel·la sense dada dins la graella
+}
+
+function textICT(v) {
+  return '<div class="popup"><p class="popup-t">' + ICT.nom + '</p><dl><dt>Valor</dt><dd>' +
+    v.toLocaleString('ca-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '</dd></dl></div>';
+}
+
+function pintaLlegendaICT() {
+  const n = ICT.parades.length;
+  document.getElementById('rampa-connectivitat').style.background = 'linear-gradient(to right, ' + ICT.ramp.join(', ') + ')';
+  document.getElementById('etiquetes-connectivitat').innerHTML =
+    ICT.parades.map((p, i) => '<span>' + (i === 0 ? '\u2264 ' : i === n - 1 ? '\u2265 ' : '') + p + '</span>').join('');
+  document.getElementById('nota-connectivitat').textContent =
+    "Índex de Connectivitat Ecològica Terrestre (ICT) 2022. Valor = log\u2081\u2080(hectàrees connectades + 1); de baixa (vermell) a alta connectivitat (verd).";
+}
+
+function actualitzaICT() {
+  const chk = document.getElementById('chk-connectivitat');
+  document.getElementById('llegenda-connectivitat').hidden = !chk.checked;
+  if (chk.checked) pintaLlegendaICT();
+  if (chk.checked && ictEstat === 'pendent') {
+    map.addSource('ict', { type: 'image', url: ICT.url, coordinates: [
+      [1.9879496323194097, 41.33815077702895], [2.0745860070855895, 41.33815077702895],
+      [2.0745860070855895, 41.26988153643319], [1.9879496323194097, 41.26988153643319]
+    ] });
+    const abans = map.getLayer('biomassa-raster') ? 'biomassa-raster'
+      : (map.getLayer('aliments-farciment') ? 'aliments-farciment' : (map.getLayer('limit-linia') ? 'limit-linia' : undefined));
+    map.addLayer({ id: 'ict-raster', type: 'raster', source: 'ict',
+      paint: { 'raster-opacity': 0.85, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } }, abans);
+    ictEstat = 'llest';
+    aplicaOpacitat('connectivitat');
+    carregaGraellaICT();
+  }
+  if (ictEstat === 'llest') map.setLayoutProperty('ict-raster', 'visibility', chk.checked ? 'visible' : 'none');
+}
+document.getElementById('chk-connectivitat').addEventListener('change', actualitzaICT);
+map.on('error', e => {
+  if (e.sourceId !== 'ict') return;
+  document.getElementById('nota-connectivitat').textContent =
+    "No s'ha pogut carregar data/ict_2022.png. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+  document.getElementById('nota-connectivitat').className = 'nota error';
+});
+
 /* ================= Aliments: rendiment dels cultius ================= */
 const ALIMENTS = {
   url: 'data/cultius_dun2024.geojson',
@@ -670,13 +752,7 @@ async function carregaGraellaBiomassa() {
 }
 
 // Valor del píxel sota un punt: un número (>0), 0 (dins l'extensió però sense biomassa) o null (fora o sense graella)
-function valorBiomassa(lngLat) {
-  if (!graellaBiomassa) return null;
-  const g = graellaBiomassa, [E, N] = UTM31(lngLat.lng, lngLat.lat);
-  const col = Math.floor((E - g.x0) / g.pixel), fila = Math.floor((g.y0 - N) / g.pixel);
-  if (col < 0 || col >= g.amplada || fila < 0 || fila >= g.alcada) return null;
-  return g.d[fila * g.amplada + col];
-}
+function valorBiomassa(lngLat) { return valorGraella(graellaBiomassa, lngLat); }
 
 function textBiomassa(v) {
   const cos = v > 0
@@ -693,6 +769,7 @@ map.on('mousemove', e => {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['aliments-farciment'] }).length > 0;
   }
   if (!sobre && document.getElementById('chk-biomassa-foliar').checked) sobre = valorBiomassa(e.lngLat) > 0;
+  if (!sobre && document.getElementById('chk-connectivitat').checked) sobre = valorICT(e.lngLat) !== null;
   map.getCanvas().style.cursor = sobre ? 'default' : '';
 });
 
@@ -706,6 +783,10 @@ map.on('click', e => {
   if (document.getElementById('chk-biomassa-foliar').checked) {
     const v = valorBiomassa(e.lngLat);
     if (v > 0 || (v === 0 && parts.length === 0)) parts.push(textBiomassa(v));
+  }
+  if (document.getElementById('chk-connectivitat').checked) {
+    const v = valorICT(e.lngLat);
+    if (v !== null) parts.push(textICT(v));
   }
   if (parts.length) {
     new maplibregl.Popup({ maxWidth: '280px' }).setLngLat(e.lngLat)
@@ -756,6 +837,9 @@ const OPACITAT = {
   ],
   'biomassa-foliar': [
     { id: 'biomassa-raster', prop: 'raster-opacity', base: 0.85 }
+  ],
+  connectivitat: [
+    { id: 'ict-raster', prop: 'raster-opacity', base: 0.85 }
   ],
   aliments: [
     { id: 'aliments-farciment', prop: 'fill-opacity', base: 0.88 },
