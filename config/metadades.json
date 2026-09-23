@@ -178,7 +178,7 @@
     },
     "aliments": {
       "titol": "Aliments: rendiment de la parcel·la (DUN 2024)",
-      "resum": "Parcel·les de cultiu del municipi de Viladecans (campanya 2024) representades pel rendiment de cada parcel·la (camp rend_sup), calculat a partir del rendiment per hectàrea del cultiu a la comarca (camp rendiment_, en kg/ha) i la superfície de la parcel·la. Rampa de vermell (valor baix) a verd (valor alt).",
+      "resum": "Parcel·les de cultiu del municipi de Viladecans (campanya 2024). Es pot representar el rendiment per hectàrea del cultiu a la comarca (camp rendiment_, en kg/ha, mostrat en t/ha) i el rendiment de cada parcel·la (camp rend_sup, en quintals, mostrat en tones: 1 q = 0,1 t), calculat a partir del rendiment per hectàrea del cultiu a la comarca i la superfície de la parcel·la. Rampa de vermell (valor baix) a verd (valor alt).",
       "categoriaTematica": "Medi ambient",
       "dataReferencia": "2024",
       "tipusData": "",
@@ -191,7 +191,7 @@
       "extensio": "Municipi de Viladecans",
       "procedencia": "Cultius declarats (DUN), campanya 2024 (cultius_dun2024.geojson). El rendiment per hectàrea de cada cultiu (kg/ha) prové de la taula produccions_viladecans.csv: DARP Baix Llobregat 2024 (31 cultius), referència estàndard (5) i, per a HORTA, una mitjana ponderada per superfície. El guaret i la paulònia es consideren no productius (0 kg/ha).",
       "llicencia": "",
-      "restriccionsUs": "Unitats del camp rend_sup pendents de confirmar.",
+      "restriccionsUs": "",
       "enllacos": []
     },
     "aigua-picma": {

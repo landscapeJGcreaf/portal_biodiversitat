@@ -775,10 +775,10 @@ const ALIMENTS = {
   variables: {
     sup: {
       camp: 'rend_sup',
-      valor: ['get', 'rend_sup'],
-      parades: [1, 25, 75, 155, 300],
+      valor: ['/', ['get', 'rend_sup'], 10],   // rend_sup és en quintals (q); es mostra en tones (1 q = 0,1 t)
+      parades: [0.1, 2.5, 7.5, 15.5, 30],
       sense: 'Guaret o sense dada',
-      nota: "Rendiment de cada parcel·la a partir del rendiment per hectàrea del cultiu a la comarca (camp rend_sup). Depèn de la superfície: no és comparable entre parcel·les de mida diferent."
+      nota: "Rendiment de cada parcel·la a partir del rendiment per hectàrea del cultiu a la comarca (camp rend_sup, en tones). Depèn de la superfície: no és comparable entre parcel·les de mida diferent."
     }
   }
 };
@@ -832,7 +832,7 @@ function textPopup(p) {
     ['Grup', p.Grup], ['Varietat', p.Varietat], ['Regadiu', reg + (p.Sist_Regad ? ' (' + p.Sist_Regad.toLowerCase() + ')' : '')],
     ['Superfície', num(p.HA, 2) + ' ha'],
     ['Rend. del cultiu', typeof p.rendiment_ === 'number' ? num(p.rendiment_ / 1000, 1) + ' t/ha' : '—'],
-    ['Rend. parcel·la', num(p.rend_sup, 1)],
+    ['Rend. parcel·la', typeof p.rend_sup === 'number' ? num(p.rend_sup / 10, 2) + ' t' : '—'],
     ['Font del rendiment', fontsRendiment[normCultiu(p.Cultiu)]],
     ['Campanya', p.Campanya]
   ];
