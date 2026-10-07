@@ -539,7 +539,7 @@ map.on('load', async () => {
 
     map.addSource('limit', { type: 'geojson', data: feature });
     map.addSource('limit-mascara', { type: 'geojson', data: mascara(feature.geometry) });
-    map.addLayer({ id: 'limit-mascara', type: 'fill', source: 'limit-mascara', paint: { 'fill-color': '#16302a', 'fill-opacity': 0.28 } });
+    map.addLayer({ id: 'limit-mascara', type: 'fill', source: 'limit-mascara', paint: { 'fill-color': '#16302a', 'fill-opacity': 0.45 } });
     map.addLayer({ id: 'limit-farciment', type: 'fill', source: 'limit', paint: { 'fill-color': '#1f6f5c', 'fill-opacity': 0.06 } });
     map.addLayer({ id: 'limit-linia', type: 'line', source: 'limit', layout: { 'line-join': 'round' },
       paint: { 'line-color': '#1f6f5c', 'line-width': ['interpolate', ['linear'], ['zoom'], 10, 2, 15, 3.5] } });
@@ -1112,7 +1112,7 @@ map.on('error', e => {
 // Cada capa del panell controla les seves capes de MapLibre; `base` és l'opacitat a 100%.
 const OPACITAT = {
   limit: [
-    { id: 'limit-mascara',   prop: 'fill-opacity', base: 0.28 },
+    { id: 'limit-mascara',   prop: 'fill-opacity', base: 0.45 },
     { id: 'limit-farciment', prop: 'fill-opacity', base: 0.06 },
     { id: 'limit-linia',     prop: 'line-opacity', base: 1 }
   ],
