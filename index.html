@@ -423,10 +423,16 @@ const GRUPS = [
 // Servei de Mapa Base de l'ICGC (WMTS, gratuït i sense clau d'API)
 const ICGC = 'https://geoserveis.icgc.cat/servei/catalunya/mapa-base/wmts/';
 const ATTR_ICGC = '© <a href="https://www.icgc.cat" target="_blank" rel="noopener">ICGC</a>';
+const ATTR_ESRI = '© <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a>';
+const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/';
+// Cada base pot tenir més d'una capa de teseles (p. ex. Esri Light Gray: fons + referència/etiquetes).
 const BASES = {
-  clar: { tiles: [ICGC + 'estandard-gris/MON3857NW/{z}/{x}/{y}.png'], attr: ATTR_ICGC + ' | © OpenStreetMap contributors', max: 19 },
-  topo: { tiles: [ICGC + 'topografic/MON3857NW/{z}/{x}/{y}.png'],     attr: ATTR_ICGC, max: 19 },
-  sat:  { tiles: [ICGC + 'orto/MON3857NW/{z}/{x}/{y}.png'],           attr: 'Ortofoto ' + ATTR_ICGC, max: 19 }
+  clar: { capes: [
+    { tiles: [ESRI + 'Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}'], max: 16 },
+    { tiles: [ESRI + 'Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}'], max: 16 }
+  ], attr: 'Esri Light Gray Canvas, ' + ATTR_ESRI },
+  topo: { capes: [{ tiles: [ICGC + 'topografic/MON3857NW/{z}/{x}/{y}.png'], max: 19 }], attr: ATTR_ICGC },
+  sat:  { capes: [{ tiles: [ICGC + 'orto/MON3857NW/{z}/{x}/{y}.png'], max: 19 }], attr: 'Ortofoto ' + ATTR_ICGC }
 };
 
 /* ================= Panell de capes ================= */
@@ -453,8 +459,11 @@ document.getElementById('grups').innerHTML = GRUPS.map(g => htmlGrup(g, 0)).join
 /* ================= Mapa ================= */
 const style = { version: 8, sources: {}, layers: [{ id: 'fons', type: 'background', paint: { 'background-color': '#eef1ee' } }] };
 for (const [id, b] of Object.entries(BASES)) {
-  style.sources['base-' + id] = { type: 'raster', tiles: b.tiles, tileSize: 256, maxzoom: b.max, attribution: b.attr };
-  style.layers.push({ id: 'base-' + id, type: 'raster', source: 'base-' + id, layout: { visibility: id === 'clar' ? 'visible' : 'none' } });
+  b.capes.forEach((capa, i) => {
+    const sid = 'base-' + id + '-' + i;
+    style.sources[sid] = { type: 'raster', tiles: capa.tiles, tileSize: 256, maxzoom: capa.max, attribution: b.attr };
+    style.layers.push({ id: sid, type: 'raster', source: sid, layout: { visibility: id === 'clar' ? 'visible' : 'none' } });
+  });
 }
 
 const map = new maplibregl.Map({
@@ -565,7 +574,8 @@ plega.addEventListener('click', () => {
 document.querySelectorAll('.bases button').forEach(btn => {
   btn.addEventListener('click', () => {
     const triat = btn.dataset.base;
-    Object.keys(BASES).forEach(id => map.setLayoutProperty('base-' + id, 'visibility', id === triat ? 'visible' : 'none'));
+    Object.entries(BASES).forEach(([id, b]) => b.capes.forEach((_, i) =>
+      map.setLayoutProperty('base-' + id + '-' + i, 'visibility', id === triat ? 'visible' : 'none')));
     document.querySelectorAll('.bases button').forEach(b => b.setAttribute('aria-pressed', b === btn));
   });
 });
