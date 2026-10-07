@@ -128,6 +128,7 @@
   .popup dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; }
   .popup dt { color: var(--tinta-suau); }
   .popup dd { margin: 0; }
+  .popup-enllac { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--linia); font-size: 12.5px; }
   @media (max-width: 640px) { .llegendes { bottom: 88px; } }
 
   .info-tooltip { position: fixed; z-index: 30; max-width: 260px; background: var(--tinta); color: #fff;
@@ -185,6 +186,11 @@
   <div class="rampa-etiquetes" id="etiquetes-biomassa"></div>
   <div class="sense"><span class="mostra-transparent"></span><span>Sense biomassa (transparent)</span></div>
   <p class="nota" id="nota-biomassa"></p>
+</div>
+<div class="llegenda-flotant" id="llegenda-arbrat" hidden>
+  <h2>Inventari d'arbrat: grau de naturalitat</h2>
+  <div id="cat-arbrat"></div>
+  <p class="nota" id="nota-arbrat"></p>
 </div>
 <div class="llegenda-flotant" id="llegenda-espaisverds" hidden>
   <h2>Espais verds: naturalitat</h2>
@@ -252,7 +258,9 @@ const GRUPS = [
       },
       {
         "id": "arbrat",
-        "nom": "Inventari d'arbrat"
+        "nom": "Inventari d'arbrat",
+        "actiu": true,
+        "inicial": false
       },
       {
         "id": "mapa-base-verd",
@@ -565,6 +573,83 @@ document.querySelectorAll('.bases button').forEach(btn => {
 map.on('mousemove', e => {
   document.getElementById('coords').textContent = `Lat: ${e.lngLat.lat.toFixed(5)} | Lon: ${e.lngLat.lng.toFixed(5)}`;
 });
+
+/* ================= Inventari d'arbrat ================= */
+const ARBRAT = {
+  url: 'data/arbrat.geojson',
+  // Grau de naturalitat de l'arbre (camp GRAU_NAT, 1-3). S'assumeix la mateixa direcció que a
+  // Espais verds (1 = baixa, valor més alt = més natural); pendent de confirmar amb l'Ajuntament.
+  categories: [
+    { valor: 1, nom: 'Alta', color: '#39ff14' },
+    { valor: 2, nom: 'Mitjana', color: '#b6e2a1' },
+    { valor: 3, nom: 'Baixa', color: '#d7484a' }
+  ]
+};
+
+function colorArbrat() {
+  const c = ['case'];
+  ARBRAT.categories.forEach(cat => { c.push(['==', ['get', 'GRAU_NAT'], cat.valor], cat.color); });
+  c.push('#9aa6a0');
+  return c;
+}
+
+function pintaLlegendaArbrat() {
+  document.getElementById('cat-arbrat').innerHTML = ARBRAT.categories
+    .map(c => '<div class="categoria"><span class="mostra-cat" style="background:' + c.color + '; border-radius:50%"></span>' + c.nom + '</div>').join('');
+  document.getElementById('nota-arbrat').textContent =
+    "Arbrat viari i d'espais verds, segons el seu grau de naturalitat (camp GRAU_NAT): 1 = alta, 3 = baixa.";
+}
+
+function textArbrat(p) {
+  const cat = ARBRAT.categories.find(c => c.valor === p.GRAU_NAT);
+  const nom = [p.nom_comu_c, p.especie].filter(Boolean).join(' · ') || p.especie || 'Arbre';
+  const rows = [
+    ['Espècie', p.especie], ['Nom comú', p.nom_comu_c],
+    ['Grau de naturalitat', cat ? cat.nom : '—'],
+    ['Alçada', p.altura], ['Perímetre', p.perimetre], ['Diàmetre capçada', p.DC_m ? p.DC_m + ' m' : null],
+    ['Biomassa', p.BAT_kg ? p.BAT_kg.toLocaleString('ca-ES') + ' kg' : null],
+    ['CO₂ capturat', p.CO2_t ? p.CO2_t.toLocaleString('ca-ES') + ' t' : null],
+    ['Adreça', p.adress], ['Barri', p.nom_barri], ['Gestor', p.gestor], ['Observacions', p.observ]
+  ];
+  const enllaç = p['enllaç_'] ? '<a href="' + esc(p['enllaç_']) + '" target="_blank" rel="noopener">Veure a Street View</a>' : '';
+  return '<div class="popup"><p class="popup-t">' + esc(nom) + '</p><dl>' +
+    rows.filter(r => r[1] !== undefined && r[1] !== null && r[1] !== '').map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join('') +
+    '</dl>' + (enllaç ? '<p class="popup-enllac">' + enllaç + '</p>' : '') + '</div>';
+}
+
+let arbratEstat = 'pendent';
+async function carregaArbrat() {
+  arbratEstat = 'carregant';
+  try {
+    const r = await fetch(ARBRAT.url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const gj = await r.json();
+    map.addSource('arbrat', { type: 'geojson', data: gj });
+    const abans = map.getLayer('limit-linia') ? 'limit-linia' : undefined;
+    map.addLayer({ id: 'arbrat-punts', type: 'circle', source: 'arbrat',
+      paint: {
+        'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 1.6, 16, 4, 19, 7],
+        'circle-color': colorArbrat(), 'circle-opacity': 0.85,
+        'circle-stroke-width': 0.6, 'circle-stroke-color': 'rgba(255,255,255,0.7)'
+      } }, abans);
+    aplicaOpacitat('arbrat');
+    arbratEstat = 'llest';
+  } catch (e) {
+    console.error('Arbrat:', e);
+    arbratEstat = 'error';
+    const nota = document.getElementById('nota-arbrat');
+    nota.className = 'nota error';
+    nota.textContent = "No s'ha pogut carregar data/arbrat.geojson. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+  }
+}
+async function actualitzaArbrat() {
+  const on = document.getElementById('chk-arbrat').checked;
+  document.getElementById('llegenda-arbrat').hidden = !on;
+  if (on) pintaLlegendaArbrat();
+  if (on && (arbratEstat === 'pendent' || arbratEstat === 'error')) await carregaArbrat();
+  if (arbratEstat === 'llest') map.setLayoutProperty('arbrat-punts', 'visibility', on ? 'visible' : 'none');
+}
+document.getElementById('chk-arbrat').addEventListener('change', actualitzaArbrat);
 
 /* ================= Espais verds: naturalitat ================= */
 const ESPAISVERDS = {
@@ -945,6 +1030,9 @@ map.on('mousemove', e => {
   if (!sobre && document.getElementById('chk-espais-verds').checked && map.getLayer('espaisverds-farciment')) {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['espaisverds-farciment'] }).length > 0;
   }
+  if (!sobre && document.getElementById('chk-arbrat').checked && map.getLayer('arbrat-punts')) {
+    sobre = map.queryRenderedFeatures(e.point, { layers: ['arbrat-punts'] }).length > 0;
+  }
   map.getCanvas().style.cursor = sobre ? 'default' : '';
 });
 
@@ -966,6 +1054,10 @@ map.on('click', e => {
   if (document.getElementById('chk-espais-verds').checked && map.getLayer('espaisverds-farciment')) {
     const f = map.queryRenderedFeatures(e.point, { layers: ['espaisverds-farciment'] });
     if (f.length) parts.push(textEspaisVerds(f[0].properties));
+  }
+  if (document.getElementById('chk-arbrat').checked && map.getLayer('arbrat-punts')) {
+    const f = map.queryRenderedFeatures(e.point, { layers: ['arbrat-punts'] });
+    if (f.length) parts.push(textArbrat(f[0].properties));
   }
   if (parts.length) {
     new maplibregl.Popup({ maxWidth: '280px' }).setLngLat(e.lngLat)
@@ -1019,6 +1111,9 @@ const OPACITAT = {
   ],
   connectivitat: [
     { id: 'ict-raster', prop: 'raster-opacity', base: 0.85 }
+  ],
+  arbrat: [
+    { id: 'arbrat-punts', prop: 'circle-opacity', base: 0.85 }
   ],
   'espais-verds': [
     { id: 'espaisverds-farciment', prop: 'fill-opacity', base: 0.85 },
