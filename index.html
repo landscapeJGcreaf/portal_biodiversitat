@@ -24,7 +24,7 @@
   #map { position: absolute; inset: 0; }
 
   .panell {
-    position: absolute; top: 12px; left: 12px; z-index: 5;
+    position: absolute; top: 12px; left: 12px; z-index: 9;
     width: 330px; max-width: calc(100vw - 24px); max-height: calc(100% - 60px);
     background: var(--paper); border-radius: 8px; box-shadow: var(--ombra);
     display: flex; flex-direction: column; overflow: hidden;
@@ -109,28 +109,29 @@
   .boto-taula[hidden] { display: none; }
   .boto-taula:hover { background: #eef2ef; border-color: var(--verd); }
 
-  /* Calaix de la taula, ancorat a la part inferior (no bloqueja el mapa ni el panell) */
-  .calaix-taula { position: fixed; left: 354px; right: 12px; bottom: 12px; z-index: 8;
-    background: var(--paper); border-radius: 8px; box-shadow: var(--ombra);
-    display: flex; flex-direction: column; max-height: 46vh; overflow: hidden; }
+  /* Calaix de la taula, ancorat a baix, començant just després de la llegenda flotant (el panell de capes hi queda per sobre) */
+  .calaix-taula { position: fixed; left: 300px; right: 0; bottom: 0; z-index: 8;
+    background: var(--paper); border-radius: 10px 10px 0 0; box-shadow: 0 -2px 16px rgba(0,0,0,.18);
+    display: flex; flex-direction: column; max-height: min(38vh, 420px); overflow: hidden; }
   .calaix-taula[hidden] { display: none; }
-  @media (max-width: 760px) { .calaix-taula { left: 12px; } }
-  .calaix-cap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--linia); flex: none; }
-  .calaix-cap h2 { margin: 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
-  .taula-comptador { font-size: 12px; color: var(--tinta-suau); white-space: nowrap; }
-  .calaix-cap .taula-cerca { flex: 1; min-width: 140px; }
-  .calaix-cap .taula-cerca input[type="search"] { width: 100%; padding: 6px 10px; border: 1px solid var(--linia); border-radius: 6px; font: inherit; font-size: 13px; }
+  @media (max-width: 700px) { .calaix-taula { left: 0; } }
+  .calaix-cap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--linia); flex: none; }
+  .calaix-cap h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--tinta); }
+  .taula-comptador { font-size: 11.5px; color: var(--tinta-suau); background: #eef2ef; border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
+  .calaix-cap .taula-cerca { flex: 1; min-width: 110px; margin-left: auto; }
+  .calaix-cap .taula-cerca input[type="search"] { width: 100%; padding: 5px 10px; border: 1px solid var(--linia); border-radius: 6px; font: inherit; font-size: 12.5px; background: #fff; }
+  .calaix-cap .taula-cerca input[type="search"]:focus { outline: none; border-color: var(--verd); }
   .taula-contenidor { overflow: auto; flex: 1; min-height: 0; }
-  table.taula { border-collapse: collapse; width: 100%; font-size: 12.5px; }
-  table.taula th, table.taula td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--linia); white-space: nowrap; }
-  table.taula th { position: sticky; top: 0; background: var(--paper); color: var(--tinta-suau); font-weight: 600; box-shadow: 0 1px 0 var(--linia); }
+  table.taula { border-collapse: collapse; width: 100%; font-size: 12px; }
+  table.taula th, table.taula td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--linia); white-space: nowrap; }
+  table.taula th { position: sticky; top: 0; background: #f2f6f4; color: var(--tinta-suau); font-weight: 600; font-size: 11.5px; box-shadow: 0 1px 0 var(--linia); }
   table.taula tbody tr { cursor: pointer; }
   table.taula tbody tr:hover { background: #f2f6f4; }
-  table.taula tbody tr.seleccionada td { background: #fff1db; }
-  table.taula tbody tr.seleccionada td:first-child { box-shadow: inset 3px 0 0 #e08a00; }
+  table.taula tbody tr.seleccionada td { background: #eaf3ef; }
+  table.taula tbody tr.seleccionada td:first-child { box-shadow: inset 3px 0 0 var(--verd); }
   table.taula td.taula-buit { color: #9aa6a0; text-align: center; white-space: normal; cursor: default; }
-  .taula-peu { display: flex; gap: 10px; align-items: center; justify-content: flex-end; padding: 8px 14px; border-top: 1px solid var(--linia); flex: none; font-size: 12.5px; color: var(--tinta-suau); }
-  .taula-peu button { border: 1px solid var(--linia); background: #fff; border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 12.5px; cursor: pointer; color: var(--tinta); }
+  .taula-peu { display: flex; gap: 8px; align-items: center; justify-content: flex-end; padding: 7px 14px; border-top: 1px solid var(--linia); flex: none; font-size: 12px; color: var(--tinta-suau); }
+  .taula-peu button { border: 1px solid var(--linia); background: #fff; border-radius: 6px; padding: 4px 9px; font: inherit; font-size: 12px; cursor: pointer; color: var(--tinta); }
   .taula-peu button:hover:not(:disabled) { background: #eef2ef; }
   .taula-peu button:disabled { opacity: .45; cursor: default; }
   @media (max-width: 560px) { table.taula th, table.taula td { white-space: normal; } }
