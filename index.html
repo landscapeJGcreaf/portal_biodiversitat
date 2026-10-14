@@ -104,6 +104,37 @@
   .modal-av { margin: 14px 0 0; font-size: 13px; color: var(--tinta-suau); }
   @media (max-width: 560px) { .modal-cos dl { grid-template-columns: 1fr; gap: 0; } .modal-cos dd { margin-bottom: 8px; } }
 
+  /* Taula d'atributs */
+  .boto-taula { display: block; width: calc(100% - 24px); margin: 0 0 8px 24px; padding: 6px 10px; border: 1px solid var(--linia); border-radius: 6px; background: #fff; color: var(--verd-fosc); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
+  .boto-taula[hidden] { display: none; }
+  .boto-taula:hover { background: #eef2ef; border-color: var(--verd); }
+
+  /* Calaix de la taula, ancorat a la part inferior (no bloqueja el mapa ni el panell) */
+  .calaix-taula { position: fixed; left: 354px; right: 12px; bottom: 12px; z-index: 8;
+    background: var(--paper); border-radius: 8px; box-shadow: var(--ombra);
+    display: flex; flex-direction: column; max-height: 46vh; overflow: hidden; }
+  .calaix-taula[hidden] { display: none; }
+  @media (max-width: 760px) { .calaix-taula { left: 12px; } }
+  .calaix-cap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--linia); flex: none; }
+  .calaix-cap h2 { margin: 0; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .02em; }
+  .taula-comptador { font-size: 12px; color: var(--tinta-suau); white-space: nowrap; }
+  .calaix-cap .taula-cerca { flex: 1; min-width: 140px; }
+  .calaix-cap .taula-cerca input[type="search"] { width: 100%; padding: 6px 10px; border: 1px solid var(--linia); border-radius: 6px; font: inherit; font-size: 13px; }
+  .taula-contenidor { overflow: auto; flex: 1; min-height: 0; }
+  table.taula { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  table.taula th, table.taula td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--linia); white-space: nowrap; }
+  table.taula th { position: sticky; top: 0; background: var(--paper); color: var(--tinta-suau); font-weight: 600; box-shadow: 0 1px 0 var(--linia); }
+  table.taula tbody tr { cursor: pointer; }
+  table.taula tbody tr:hover { background: #f2f6f4; }
+  table.taula tbody tr.seleccionada td { background: #fff1db; }
+  table.taula tbody tr.seleccionada td:first-child { box-shadow: inset 3px 0 0 #e08a00; }
+  table.taula td.taula-buit { color: #9aa6a0; text-align: center; white-space: normal; cursor: default; }
+  .taula-peu { display: flex; gap: 10px; align-items: center; justify-content: flex-end; padding: 8px 14px; border-top: 1px solid var(--linia); flex: none; font-size: 12.5px; color: var(--tinta-suau); }
+  .taula-peu button { border: 1px solid var(--linia); background: #fff; border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 12.5px; cursor: pointer; color: var(--tinta); }
+  .taula-peu button:hover:not(:disabled) { background: #eef2ef; }
+  .taula-peu button:disabled { opacity: .45; cursor: default; }
+  @media (max-width: 560px) { table.taula th, table.taula td { white-space: normal; } }
+
   /* Llegenda flotant de capes de dades */
   .llegendes { position: absolute; left: 12px; bottom: 44px; z-index: 5; width: 270px; max-width: calc(100vw - 24px); display: flex; flex-direction: column; gap: 8px; }
   .llegenda-flotant { background: var(--paper); border-radius: 8px; box-shadow: var(--ombra); padding: 12px 14px; font-size: 13px; }
@@ -228,6 +259,27 @@
     <div class="modal-cos" id="modal-cos"></div>
   </div>
 </div>
+<div class="calaix-taula" id="modal-taula" role="region" aria-label="Taula d'atributs" hidden>
+  <div class="calaix-cap">
+    <h2 id="modal-taula-titol"></h2>
+    <span class="taula-comptador" id="taula-comptador"></span>
+    <div class="taula-cerca">
+      <input type="search" id="cerca-taula" placeholder="Cerca a la taula…" aria-label="Cerca a la taula d'atributs">
+    </div>
+    <button class="modal-tanca" id="modal-taula-tanca" aria-label="Tanca la taula">&#10005;</button>
+  </div>
+  <div class="taula-contenidor">
+    <table class="taula">
+      <thead id="taula-capcalera"></thead>
+      <tbody id="taula-cos"></tbody>
+    </table>
+  </div>
+  <div class="taula-peu">
+    <span id="taula-pagina-info"></span>
+    <button id="taula-anterior" type="button">&larr; Anterior</button>
+    <button id="taula-seguent" type="button">Següent &rarr;</button>
+  </div>
+</div>
 
 <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script>
@@ -254,13 +306,15 @@ const GRUPS = [
         "id": "espais-verds",
         "nom": "Inventari superfícies verds",
         "actiu": true,
-        "inicial": false
+        "inicial": false,
+        "taula": true
       },
       {
         "id": "arbrat",
         "nom": "Inventari d'arbrat",
         "actiu": true,
-        "inicial": false
+        "inicial": false,
+        "taula": true
       },
       {
         "id": "mapa-base-verd",
@@ -336,7 +390,8 @@ const GRUPS = [
             "id": "aliments",
             "nom": "Aliments (rendiment de la parcel·la)",
             "actiu": true,
-            "inicial": false
+            "inicial": false,
+            "taula": true
           },
           {
             "id": "aigua-picma",
@@ -448,7 +503,8 @@ function htmlCapa(c) {
       <span>Opacitat</span>
       <input type="range" min="0" max="100" step="5" value="100" data-opacitat="${c.id}" aria-label="Opacitat de la capa ${c.nom}">
       <output>100%</output>
-    </div>`}`;
+    </div>`}
+    ${pendent || !c.taula ? '' : `<button class="boto-taula" id="boto-taula-${c.id}" data-capa="${c.id}" type="button"${c.inicial === false ? ' hidden' : ''}>Veure taula d'atributs</button>`}`;
 }
 function htmlGrup(g, nivell) {
   const cos = (g.capes || []).map(htmlCapa).join('') + (g.subgrups || []).map(s => htmlGrup(s, nivell + 1)).join('');
@@ -490,6 +546,8 @@ class BotoInici {
   onRemove() { this._div.remove(); }
 }
 let extensioInicial = null;   // s'omple quan es carrega el límit municipal
+// Features completes (amb geometria) de cada capa, per a la taula d'atributs (s'omplen en carregar cada capa)
+let dadesAliments = [], dadesArbrat = [], dadesEspaisVerds = [];
 map.addControl(new BotoInici(), 'bottom-right');
 
 /* ================= Límit municipal ================= */
@@ -643,6 +701,8 @@ async function carregaArbrat() {
         'circle-stroke-width': 0.6, 'circle-stroke-color': 'rgba(255,255,255,0.7)'
       } }, abans);
     aplicaOpacitat('arbrat');
+    dadesArbrat = gj.features || [];
+    actualitzaBotoTaula('arbrat', dadesArbrat.length);
     arbratEstat = 'llest';
   } catch (e) {
     console.error('Arbrat:', e);
@@ -712,6 +772,8 @@ async function carregaEspaisVerds() {
     map.addLayer({ id: 'espaisverds-linia', type: 'line', source: 'espaisverds',
       paint: { 'line-color': 'rgba(30,40,35,0.4)', 'line-width': 0.4 } }, abans);
     aplicaOpacitat('espais-verds');
+    dadesEspaisVerds = gj.features || [];
+    actualitzaBotoTaula('espais-verds', dadesEspaisVerds.length);
     espaisVerdsEstat = 'llest';
   } catch (e) {
     console.error('Espais verds:', e);
@@ -953,6 +1015,8 @@ async function carregaAliments() {
       paint: { 'line-color': 'rgba(30,40,35,0.55)', 'line-width': 0.5 } }, abans);
 
     aplicaOpacitat('aliments');
+    dadesAliments = gj.features || [];
+    actualitzaBotoTaula('aliments', dadesAliments.length);
     alimentsEstat = 'llest';
   } catch (e) {
     console.error('Aliments:', e);
@@ -1154,11 +1218,14 @@ document.querySelectorAll('input[data-opacitat]').forEach(rang => {
   });
 });
 
-// La barra només es veu quan la capa està activada
+// La barra d'opacitat i el botó de la taula només es veuen quan la capa està activada
 document.querySelectorAll('.capa input[type="checkbox"]:not(:disabled)').forEach(chk => {
   chk.addEventListener('change', () => {
-    const fila = document.getElementById('op-' + chk.id.replace('chk-', ''));
+    const id = chk.id.replace('chk-', '');
+    const fila = document.getElementById('op-' + id);
     if (fila) fila.hidden = !chk.checked;
+    const botoTaula = document.getElementById('boto-taula-' + id);
+    if (botoTaula) botoTaula.hidden = !chk.checked;
   });
 });
 
@@ -1246,6 +1313,168 @@ document.querySelectorAll('.info').forEach(btn => {
 document.getElementById('modal-tanca').addEventListener('click', tancaFitxa);
 modal.addEventListener('click', e => { if (e.target === modal) tancaFitxa(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modal.hidden) tancaFitxa(); });
+
+/* ================= Taula d'atributs ================= */
+const numCA = (x, d) => (typeof x === 'number' ? x.toLocaleString('ca-ES', { maximumFractionDigits: d }) : undefined);
+
+const TAULES = {
+  aliments: {
+    nom: 'Aliments — rendiment de la parcel·la',
+    dades: () => dadesAliments,
+    columnes: [
+      ['Cultiu', p => p.Cultiu],
+      ['Municipi', p => p.Municipi],
+      ['Grup', p => p.Grup],
+      ['Varietat', p => p.Varietat],
+      ['Regadiu', p => p.Seca_Regad === 'R' ? 'Regadiu' : p.Seca_Regad === 'S' ? 'Secà' : p.Seca_Regad],
+      ['Sistema de reg', p => p.Sist_Regad],
+      ['Superfície (ha)', p => numCA(p.HA, 2)],
+      ['Rend. del cultiu (t/ha)', p => numCA(typeof p.rendiment_ === 'number' ? p.rendiment_ / 1000 : undefined, 1)],
+      ['Rend. parcel·la (t)', p => numCA(typeof p.rend_sup === 'number' ? p.rend_sup / 10 : undefined, 2)],
+      ['Font del rendiment', p => fontsRendiment[normCultiu(p.Cultiu)]],
+      ['Campanya', p => p.Campanya]
+    ]
+  },
+  arbrat: {
+    nom: "Inventari d'arbrat",
+    dades: () => dadesArbrat,
+    columnes: [
+      ['Espècie', p => p.especie],
+      ['Nom comú', p => p.nom_comu_c],
+      ['Grau de naturalitat', p => (ARBRAT.categories.find(c => c.valor === p.GRAU_NAT) || {}).nom],
+      ['Alçada', p => p.altura],
+      ['Perímetre', p => p.perimetre],
+      ['Diàmetre capçada (m)', p => p.DC_m],
+      ['Biomassa (kg)', p => numCA(p.BAT_kg, 1)],
+      ['CO₂ capturat (t)', p => numCA(p.CO2_t, 2)],
+      ['Adreça', p => p.adress],
+      ['Barri', p => p.nom_barri],
+      ['Gestor', p => p.gestor],
+      ['Observacions', p => p.observ]
+    ]
+  },
+  'espais-verds': {
+    nom: 'Inventari superfícies verds',
+    dades: () => dadesEspaisVerds,
+    columnes: [
+      ['Nom', p => p.nom],
+      ['Tipus', p => p.tipus_sup],
+      ['Àmbit', p => p.ambit],
+      ['Naturalitat', p => (ESPAISVERDS.categories.find(c => c.valor === p.naturalita) || {}).nom],
+      ['Superfície (m²)', p => numCA(p.superficie, 0)],
+      ['Reg', p => p.reg],
+      ['Tipus de reg', p => p.tipus_reg],
+      ['Gestor', p => p.gestor],
+      ['Observacions', p => p.obs]
+    ]
+  }
+};
+
+function actualitzaBotoTaula(capaId, n) {
+  const btn = document.getElementById('boto-taula-' + capaId);
+  if (btn) btn.textContent = "Veure taula d'atributs (" + n.toLocaleString('ca-ES') + ' registres)';
+}
+
+// Capa de selecció: ressalta al mapa la fila clicada a la taula (funciona amb punts o polígons)
+map.on('load', () => {
+  map.addSource('seleccio', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
+  map.addLayer({ id: 'seleccio-farciment', type: 'fill', source: 'seleccio',
+    filter: ['==', ['geometry-type'], 'Polygon'],
+    paint: { 'fill-color': '#e08a00', 'fill-opacity': 0.22 } });
+  map.addLayer({ id: 'seleccio-contorn', type: 'line', source: 'seleccio',
+    filter: ['==', ['geometry-type'], 'Polygon'],
+    paint: { 'line-color': '#e08a00', 'line-width': 3 } });
+  map.addLayer({ id: 'seleccio-punt', type: 'circle', source: 'seleccio',
+    filter: ['==', ['geometry-type'], 'Point'],
+    paint: { 'circle-radius': 10, 'circle-color': 'rgba(224,138,0,0.25)', 'circle-stroke-width': 3, 'circle-stroke-color': '#e08a00' } });
+});
+
+function seleccionaFeature(feature) {
+  const font = map.getSource('seleccio');
+  if (!font) return;
+  font.setData({ type: 'FeatureCollection', features: feature ? [{ type: 'Feature', geometry: feature.geometry, properties: {} }] : [] });
+  if (!feature || !feature.geometry) return;
+  const b = bbox(feature.geometry);
+  const alturaCalaix = document.getElementById('modal-taula').getBoundingClientRect().height || 0;
+  const padding = { top: 60, right: 60, bottom: alturaCalaix + 40, left: 60 };
+  if (b[0][0] === b[1][0] && b[0][1] === b[1][1]) map.flyTo({ center: b[0], zoom: Math.max(map.getZoom(), 17), padding });
+  else map.fitBounds(b, { padding, maxZoom: 18 });
+}
+
+const modalTaula = document.getElementById('modal-taula');
+const MIDA_PAGINA_TAULA = 50;
+let taulaEstat = { columnes: [], files: [], filtrades: [], pagina: 0 };
+let obridorTaula = null;
+
+function obreTaula(capaId, boto) {
+  const t = TAULES[capaId];
+  if (!t) return;
+  obridorTaula = boto || null;
+  document.getElementById('modal-taula-titol').textContent = t.nom.toUpperCase();
+  taulaEstat.columnes = t.columnes;
+  taulaEstat.files = t.dades();
+  document.getElementById('cerca-taula').value = '';
+  aplicaFiltreTaula('');
+  modalTaula.hidden = false;
+}
+function tancaTaula() {
+  modalTaula.hidden = true;
+  seleccionaFeature(null);
+  if (obridorTaula) obridorTaula.focus();
+}
+
+function aplicaFiltreTaula(text) {
+  const f = (text || '').trim().toLowerCase();
+  taulaEstat.filtrades = !f ? taulaEstat.files : taulaEstat.files.filter(ft =>
+    taulaEstat.columnes.some(c => { const v = c[1](ft.properties || {}); return v !== undefined && v !== null && String(v).toLowerCase().includes(f); }));
+  taulaEstat.pagina = 0;
+  renderTaula();
+}
+
+function renderTaula() {
+  const { columnes, filtrades, pagina } = taulaEstat;
+  const total = filtrades.length;
+  const totalPagines = Math.max(1, Math.ceil(total / MIDA_PAGINA_TAULA));
+  const inici = pagina * MIDA_PAGINA_TAULA;
+  const pag = filtrades.slice(inici, inici + MIDA_PAGINA_TAULA);
+
+  document.getElementById('taula-capcalera').innerHTML =
+    '<tr>' + columnes.map(c => '<th>' + esc(c[0]) + '</th>').join('') + '</tr>';
+  document.getElementById('taula-cos').innerHTML = pag.length
+    ? pag.map((ft, j) => '<tr data-idx="' + (inici + j) + '">' + columnes.map(c => {
+        const v = c[1](ft.properties || {});
+        return '<td>' + (v === undefined || v === null || v === '' ? '—' : esc(v)) + '</td>';
+      }).join('') + '</tr>').join('')
+    : '<tr><td class="taula-buit" colspan="' + columnes.length + '">Cap registre coincident.</td></tr>';
+
+  document.getElementById('taula-comptador').textContent =
+    (total === taulaEstat.files.length ? total.toLocaleString('ca-ES') + ' registres' : total.toLocaleString('ca-ES') + ' de ' + taulaEstat.files.length.toLocaleString('ca-ES') + ' registres');
+  document.getElementById('taula-pagina-info').textContent = 'Pàgina ' + (pagina + 1) + ' de ' + totalPagines;
+  document.getElementById('taula-anterior').disabled = pagina <= 0;
+  document.getElementById('taula-seguent').disabled = pagina >= totalPagines - 1;
+}
+
+document.querySelectorAll('.boto-taula').forEach(btn => {
+  btn.addEventListener('click', () => obreTaula(btn.dataset.capa, btn));
+});
+document.getElementById('modal-taula-tanca').addEventListener('click', tancaTaula);
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modalTaula.hidden) tancaTaula(); });
+document.getElementById('cerca-taula').addEventListener('input', e => aplicaFiltreTaula(e.target.value));
+document.getElementById('taula-anterior').addEventListener('click', () => { if (taulaEstat.pagina > 0) { taulaEstat.pagina--; renderTaula(); } });
+document.getElementById('taula-seguent').addEventListener('click', () => {
+  const totalPagines = Math.max(1, Math.ceil(taulaEstat.filtrades.length / MIDA_PAGINA_TAULA));
+  if (taulaEstat.pagina < totalPagines - 1) { taulaEstat.pagina++; renderTaula(); }
+});
+
+// Clic a una fila: selecciona i centra la geometria corresponent al mapa
+document.getElementById('taula-cos').addEventListener('click', e => {
+  const tr = e.target.closest('tr[data-idx]');
+  if (!tr) return;
+  document.querySelectorAll('#taula-cos tr.seleccionada').forEach(x => x.classList.remove('seleccionada'));
+  tr.classList.add('seleccionada');
+  const feature = taulaEstat.filtrades[+tr.dataset.idx];
+  seleccionaFeature(feature);
+});
 </script>
 </body>
 </html>
