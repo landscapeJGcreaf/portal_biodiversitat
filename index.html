@@ -118,9 +118,6 @@
   .calaix-cap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--linia); flex: none; }
   .calaix-cap h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--tinta); }
   .taula-comptador { font-size: 11.5px; color: var(--tinta-suau); background: #eef2ef; border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
-  .calaix-cap .taula-cerca { flex: 1; min-width: 110px; margin-left: auto; }
-  .calaix-cap .taula-cerca input[type="search"] { width: 100%; padding: 5px 10px; border: 1px solid var(--linia); border-radius: 6px; font: inherit; font-size: 12.5px; background: #fff; }
-  .calaix-cap .taula-cerca input[type="search"]:focus { outline: none; border-color: var(--verd); }
   .taula-contenidor { overflow: auto; flex: 1; min-height: 0; }
   table.taula { border-collapse: collapse; width: 100%; font-size: 12px; }
   table.taula th, table.taula td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--linia); white-space: nowrap; }
@@ -264,10 +261,7 @@
   <div class="calaix-cap">
     <h2 id="modal-taula-titol"></h2>
     <span class="taula-comptador" id="taula-comptador"></span>
-    <div class="taula-cerca">
-      <input type="search" id="cerca-taula" placeholder="Cerca a la taula…" aria-label="Cerca a la taula d'atributs">
-    </div>
-    <button class="modal-tanca" id="modal-taula-tanca" aria-label="Tanca la taula">&#10005;</button>
+    <button class="modal-tanca" id="modal-taula-tanca" aria-label="Tanca la taula" style="margin-left:auto">&#10005;</button>
   </div>
   <div class="taula-contenidor">
     <table class="taula">
@@ -1404,7 +1398,7 @@ function seleccionaFeature(feature) {
 
 const modalTaula = document.getElementById('modal-taula');
 const MIDA_PAGINA_TAULA = 50;
-let taulaEstat = { columnes: [], files: [], filtrades: [], pagina: 0 };
+let taulaEstat = { columnes: [], files: [], pagina: 0 };
 let obridorTaula = null;
 
 function obreTaula(capaId, boto) {
@@ -1414,8 +1408,8 @@ function obreTaula(capaId, boto) {
   document.getElementById('modal-taula-titol').textContent = t.nom.toUpperCase();
   taulaEstat.columnes = t.columnes;
   taulaEstat.files = t.dades();
-  document.getElementById('cerca-taula').value = '';
-  aplicaFiltreTaula('');
+  taulaEstat.pagina = 0;
+  renderTaula();
   modalTaula.hidden = false;
 }
 function tancaTaula() {
@@ -1424,20 +1418,12 @@ function tancaTaula() {
   if (obridorTaula) obridorTaula.focus();
 }
 
-function aplicaFiltreTaula(text) {
-  const f = (text || '').trim().toLowerCase();
-  taulaEstat.filtrades = !f ? taulaEstat.files : taulaEstat.files.filter(ft =>
-    taulaEstat.columnes.some(c => { const v = c[1](ft.properties || {}); return v !== undefined && v !== null && String(v).toLowerCase().includes(f); }));
-  taulaEstat.pagina = 0;
-  renderTaula();
-}
-
 function renderTaula() {
-  const { columnes, filtrades, pagina } = taulaEstat;
-  const total = filtrades.length;
+  const { columnes, files, pagina } = taulaEstat;
+  const total = files.length;
   const totalPagines = Math.max(1, Math.ceil(total / MIDA_PAGINA_TAULA));
   const inici = pagina * MIDA_PAGINA_TAULA;
-  const pag = filtrades.slice(inici, inici + MIDA_PAGINA_TAULA);
+  const pag = files.slice(inici, inici + MIDA_PAGINA_TAULA);
 
   document.getElementById('taula-capcalera').innerHTML =
     '<tr>' + columnes.map(c => '<th>' + esc(c[0]) + '</th>').join('') + '</tr>';
@@ -1446,10 +1432,9 @@ function renderTaula() {
         const v = c[1](ft.properties || {});
         return '<td>' + (v === undefined || v === null || v === '' ? '—' : esc(v)) + '</td>';
       }).join('') + '</tr>').join('')
-    : '<tr><td class="taula-buit" colspan="' + columnes.length + '">Cap registre coincident.</td></tr>';
+    : '<tr><td class="taula-buit" colspan="' + columnes.length + '">Cap registre.</td></tr>';
 
-  document.getElementById('taula-comptador').textContent =
-    (total === taulaEstat.files.length ? total.toLocaleString('ca-ES') + ' registres' : total.toLocaleString('ca-ES') + ' de ' + taulaEstat.files.length.toLocaleString('ca-ES') + ' registres');
+  document.getElementById('taula-comptador').textContent = total.toLocaleString('ca-ES') + ' registres';
   document.getElementById('taula-pagina-info').textContent = 'Pàgina ' + (pagina + 1) + ' de ' + totalPagines;
   document.getElementById('taula-anterior').disabled = pagina <= 0;
   document.getElementById('taula-seguent').disabled = pagina >= totalPagines - 1;
@@ -1460,10 +1445,9 @@ document.querySelectorAll('.boto-taula').forEach(btn => {
 });
 document.getElementById('modal-taula-tanca').addEventListener('click', tancaTaula);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modalTaula.hidden) tancaTaula(); });
-document.getElementById('cerca-taula').addEventListener('input', e => aplicaFiltreTaula(e.target.value));
 document.getElementById('taula-anterior').addEventListener('click', () => { if (taulaEstat.pagina > 0) { taulaEstat.pagina--; renderTaula(); } });
 document.getElementById('taula-seguent').addEventListener('click', () => {
-  const totalPagines = Math.max(1, Math.ceil(taulaEstat.filtrades.length / MIDA_PAGINA_TAULA));
+  const totalPagines = Math.max(1, Math.ceil(taulaEstat.files.length / MIDA_PAGINA_TAULA));
   if (taulaEstat.pagina < totalPagines - 1) { taulaEstat.pagina++; renderTaula(); }
 });
 
@@ -1473,7 +1457,7 @@ document.getElementById('taula-cos').addEventListener('click', e => {
   if (!tr) return;
   document.querySelectorAll('#taula-cos tr.seleccionada').forEach(x => x.classList.remove('seleccionada'));
   tr.classList.add('seleccionada');
-  const feature = taulaEstat.filtrades[+tr.dataset.idx];
+  const feature = taulaEstat.files[+tr.dataset.idx];
   seleccionaFeature(feature);
 });
 </script>
