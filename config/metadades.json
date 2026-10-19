@@ -267,22 +267,34 @@
       "enllacos": []
     },
     "reg-microclima": {
-      "titol": "Regulació microclimàtica",
-      "resum": "",
+      "titol": "Regulació microclimàtica: Sky View Factor (SVF)",
+      "resum": "Sky View Factor (SVF): fracció de cel visible des del terra mirant cap amunt, projectada sobre un pla. És un paràmetre important per mesurar l'intercanvi de radiació entre la ciutat i l'atmosfera. Valors baixos indiquen un cel molt tapat (carrers estrets, edificis alts, arbrat dens) i valors alts un cel més obert.",
       "categoriaTematica": "Medi ambient",
       "dataReferencia": "2020",
       "tipusData": "",
-      "estat": "Pendent d'incorporar al visor",
+      "estat": "Disponible al visor",
       "frequenciaActualitzacio": "",
-      "tipusRepresentacio": "Ràster",
-      "format": "",
-      "sistemaReferencia": "",
+      "tipusRepresentacio": "Ràster (servei de mapes en línia)",
+      "format": "Servei ArcGIS REST MapServer (export de mapa), consumit en directe",
+      "sistemaReferencia": "ETRS89 / UTM 31N (EPSG:25831); el visor el sol·licita reprojectat a Web Mercator",
       "resolucio": "",
-      "extensio": "Municipi de Viladecans",
-      "procedencia": "Mapa Sky View Factor (Barcelona Regional)",
+      "extensio": "Àrea Metropolitana de Barcelona (X 398.928-444.879, Y 4.567.045-4.600.474); al visor es mostra retallat al límit municipal de Viladecans",
+      "procedencia": "Mapa Sky View Factor (Barcelona Regional). Propietari de les dades: Àrea Metropolitana de Barcelona (AMB), que el publica com a servei ide.amb.cat/geoserveis/rest/services/sky_view_factor_25831. No es guarda cap còpia local de les dades.",
       "llicencia": "",
       "restriccionsUs": "",
-      "enllacos": []
+      "enllacos": [
+        {
+          "text": "Fitxa de la dada a l'AMB",
+          "url": "https://www.amb.cat/es/web/area-metropolitana/dades-espacials/detall/-/serveidigital/sky-view-factor/12816282/11692"
+        },
+        {
+          "text": "Servei ArcGIS REST (sky_view_factor_25831)",
+          "url": "https://ide.amb.cat/geoserveis/rest/services/sky_view_factor_25831/MapServer"
+        }
+      ],
+      "organitzacio": "CREAF",
+      "persona": "Javier Gordillo",
+      "email": "j.gordillo@creaf.uab.cat"
     },
     "biomassa-foliar": {
       "titol": "Biomassa foliar (2016-2017)",
