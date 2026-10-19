@@ -221,6 +221,13 @@
   <div class="sense"><span class="mostra-transparent"></span><span>Sense biomassa (transparent)</span></div>
   <p class="nota" id="nota-biomassa"></p>
 </div>
+<div class="llegenda-flotant" id="llegenda-svf" hidden>
+  <h2>Sky View Factor</h2>
+  <div class="rampa" id="rampa-svf"></div>
+  <div class="rampa-etiquetes" id="etiquetes-svf"></div>
+  <div class="sense"><span class="mostra-transparent"></span><span>Sense dada (transparent)</span></div>
+  <p class="nota" id="nota-svf"></p>
+</div>
 <div class="llegenda-flotant" id="llegenda-arbrat" hidden>
   <h2>Inventari d'arbrat: grau de naturalitat</h2>
   <div id="cat-arbrat"></div>
@@ -373,15 +380,15 @@ const GRUPS = [
               {
                 "nom": "N3",
                 "capes": [
-                  { "id": "cobertes-n3-2009", "nom": "2009" },
-                  { "id": "cobertes-n3-2020", "nom": "2020" }
+                  { "id": "cobertes-n3-2020", "nom": "2020" },
+                  { "id": "cobertes-n3-2009", "nom": "2009" }
                 ]
               },
               {
                 "nom": "N1F",
                 "capes": [
-                  { "id": "cobertes-n1f-2009", "nom": "2009" },
-                  { "id": "cobertes-n1f-2020", "nom": "2020" }
+                  { "id": "cobertes-n1f-2020", "nom": "2020" },
+                  { "id": "cobertes-n1f-2009", "nom": "2009" }
                 ]
               }
             ]
@@ -421,7 +428,9 @@ const GRUPS = [
           },
           {
             "id": "reg-microclima",
-            "nom": "Regulació microclimàtica"
+            "nom": "Regulació microclimàtica (SVF)",
+            "actiu": true,
+            "inicial": false
           },
           {
             "id": "pollinitzacio",
@@ -1185,6 +1194,7 @@ map.on('mousemove', e => {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['aliments-farciment'] }).length > 0;
   }
   if (!sobre && document.getElementById('chk-biomassa-foliar').checked) sobre = valorBiomassa(e.lngLat) > 0;
+  if (!sobre && document.getElementById('chk-reg-microclima').checked) sobre = valorSVF(e.lngLat) !== null;
   if (!sobre && document.getElementById('chk-connectivitat').checked) sobre = valorICT(e.lngLat) !== null;
   if (!sobre && document.getElementById('chk-espais-verds').checked && map.getLayer('espaisverds-farciment')) {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['espaisverds-farciment'] }).length > 0;
@@ -1208,6 +1218,10 @@ map.on('click', e => {
   if (document.getElementById('chk-biomassa-foliar').checked) {
     const v = valorBiomassa(e.lngLat);
     if (v > 0 || (v === 0 && parts.length === 0)) parts.push(textBiomassa(v));
+  }
+  if (document.getElementById('chk-reg-microclima').checked) {
+    const v = valorSVF(e.lngLat);
+    if (v !== null) parts.push(textSVF(v));
   }
   if (document.getElementById('chk-connectivitat').checked) {
     const v = valorICT(e.lngLat);
@@ -1264,6 +1278,74 @@ map.on('error', e => {
   nota.textContent = "No s'ha pogut carregar data/bf_2016_2017.png. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
 });
 
+const SVF = {
+  url: 'data/svf_areaestudi.png',
+  graella: 'data/svf_areaestudi.json',
+  nom: 'Sky View Factor', unitat: '%',
+  coordenades: [[1.9932269815338635, 41.32706314046145], [2.037017297678032, 41.32706314046145], [2.037017297678032, 41.29947037852844], [1.9932269815338635, 41.29947037852844]],
+  ramp: ['#000000', '#404040', '#808080', '#bfbfbf', '#ffffff'],
+  parades: [0, 15, 30, 45, 60],
+  escala: 100 / 255   // el ràster original és un byte (0-255); el convertim a percentatge
+};
+let svfEstat = 'pendent';
+let graellaSVF = null;
+
+async function carregaGraellaSVF() {
+  try {
+    const r = await fetch(SVF.graella);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const g = await r.json();
+    const d = new Float32Array(g.amplada * g.alcada);
+    for (let k = 0; k < g.i.length; k++) d[g.i[k]] = g.v[k];
+    graellaSVF = { ...g, d };
+  } catch (e) { console.warn('Graella de SVF no disponible:', e); }
+}
+
+// Valor del píxel sota un punt, en percentatge (0-100), o null si és fora de l'extensió o sense graella
+function valorSVF(lngLat) {
+  const v = valorGraella(graellaSVF, lngLat);
+  return v === null || v === undefined ? null : v * SVF.escala;
+}
+
+function textSVF(v) {
+  return '<div class="popup"><p class="popup-t">' + SVF.nom + '</p><dl><dt>Valor</dt><dd>' +
+    v.toLocaleString('ca-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' ' + SVF.unitat + '</dd></dl></div>';
+}
+
+function pintaLlegendaSVF() {
+  const n = SVF.parades.length;
+  document.getElementById('rampa-svf').style.background = 'linear-gradient(to right, ' + SVF.ramp.join(', ') + ')';
+  document.getElementById('etiquetes-svf').innerHTML =
+    SVF.parades.map((p, i) => '<span>' + (i === n - 1 ? '≥ ' : '') + p + '%</span>').join('');
+  const nota = document.getElementById('nota-svf');
+  nota.className = 'nota';
+  nota.textContent = 'Fracció de cel visible des de cada punt: 0% (negre) és un cel totalment tapat (carrers estrets, vegetació densa), 100% (blanc) és cel completament obert.';
+}
+
+function actualitzaSVF() {
+  const chk = document.getElementById('chk-reg-microclima');
+  document.getElementById('llegenda-svf').hidden = !chk.checked;
+  if (chk.checked) pintaLlegendaSVF();
+  if (chk.checked && svfEstat === 'pendent') {
+    map.addSource('svf', { type: 'image', url: SVF.url, coordinates: SVF.coordenades });
+    const abans = map.getLayer('biomassa-raster') ? 'biomassa-raster'
+      : (map.getLayer('aliments-farciment') ? 'aliments-farciment' : (map.getLayer('limit-linia') ? 'limit-linia' : undefined));
+    map.addLayer({ id: 'svf-raster', type: 'raster', source: 'svf',
+      paint: { 'raster-opacity': 0.85, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } }, abans);
+    svfEstat = 'llest';
+    aplicaOpacitat('reg-microclima');
+    carregaGraellaSVF();
+  }
+  if (svfEstat === 'llest') map.setLayoutProperty('svf-raster', 'visibility', chk.checked ? 'visible' : 'none');
+}
+document.getElementById('chk-reg-microclima').addEventListener('change', actualitzaSVF);
+map.on('error', e => {
+  if (e.sourceId !== 'svf') return;
+  const nota = document.getElementById('nota-svf');
+  nota.className = 'nota error';
+  nota.textContent = "No s'ha pogut carregar data/svf_areaestudi.png. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+});
+
 /* ================= Opacitat de les capes ================= */
 // Cada capa del panell controla les seves capes de MapLibre; `base` és l'opacitat a 100%.
 const OPACITAT = {
@@ -1274,6 +1356,9 @@ const OPACITAT = {
   ],
   'biomassa-foliar': [
     { id: 'biomassa-raster', prop: 'raster-opacity', base: 0.85 }
+  ],
+  'reg-microclima': [
+    { id: 'svf-raster', prop: 'raster-opacity', base: 0.85 }
   ],
   connectivitat: [
     { id: 'ict-raster', prop: 'raster-opacity', base: 0.85 }
