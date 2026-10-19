@@ -112,25 +112,27 @@
   /* Calaix de la taula, ancorat a baix, començant just després de la llegenda flotant (el panell de capes hi queda per sobre) */
   .calaix-taula { position: fixed; left: 300px; right: 0; bottom: 0; z-index: 8;
     background: var(--paper); border-radius: 10px 10px 0 0; box-shadow: 0 -2px 16px rgba(0,0,0,.18);
-    display: flex; flex-direction: column; max-height: min(38vh, 420px); overflow: hidden; }
+    display: flex; flex-direction: column; height: min(38vh, 420px); min-height: 140px; max-height: 88vh; overflow: hidden; }
   .calaix-taula[hidden] { display: none; }
   @media (max-width: 700px) { .calaix-taula { left: 0; } }
+  .calaix-redimensiona { flex: none; height: 10px; margin-bottom: -10px; cursor: ns-resize; position: relative; z-index: 1; touch-action: none; }
+  .calaix-redimensiona::after { content: ''; position: absolute; left: 50%; top: 2px; transform: translateX(-50%); width: 36px; height: 4px; border-radius: 2px; background: var(--linia); }
+  .calaix-redimensiona:hover::after, .calaix-redimensiona.actiu::after { background: var(--verd); }
   .calaix-cap { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; border-bottom: 1px solid var(--linia); flex: none; }
-  .calaix-cap h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--tinta); }
+  .calaix-cap h2 { margin: 0; font-size: 14px; font-weight: 600; color: var(--tinta); white-space: nowrap; }
+  .taula-cerca { font: inherit; font-size: 12px; padding: 5px 10px; border: 1px solid var(--linia); border-radius: 6px; width: 200px; max-width: 40vw; color: var(--tinta); background: #fff; }
+  .taula-cerca:focus { outline: none; border-color: var(--verd); }
   .taula-comptador { font-size: 11.5px; color: var(--tinta-suau); background: #eef2ef; border-radius: 10px; padding: 2px 8px; white-space: nowrap; }
   .taula-contenidor { overflow: auto; flex: 1; min-height: 0; }
   table.taula { border-collapse: collapse; width: 100%; font-size: 12px; }
   table.taula th, table.taula td { text-align: left; padding: 6px 10px; border-bottom: 1px solid var(--linia); white-space: nowrap; }
-  table.taula th { position: sticky; top: 0; background: #f2f6f4; color: var(--tinta-suau); font-weight: 600; font-size: 11.5px; box-shadow: 0 1px 0 var(--linia); }
+  table.taula th { position: sticky; top: 0; background: #f2f6f4; color: var(--tinta-suau); font-weight: 600; font-size: 11.5px; box-shadow: 0 1px 0 var(--linia); cursor: pointer; user-select: none; }
+  table.taula th:hover { background: #e4ebe7; }
   table.taula tbody tr { cursor: pointer; }
   table.taula tbody tr:hover { background: #f2f6f4; }
-  table.taula tbody tr.seleccionada td { background: #eaf3ef; }
-  table.taula tbody tr.seleccionada td:first-child { box-shadow: inset 3px 0 0 var(--verd); }
+  table.taula tbody tr.seleccionada td { background: #fff6d6; }
+  table.taula tbody tr.seleccionada td:first-child { box-shadow: inset 3px 0 0 #e0b800; }
   table.taula td.taula-buit { color: #9aa6a0; text-align: center; white-space: normal; cursor: default; }
-  .taula-peu { display: flex; gap: 8px; align-items: center; justify-content: flex-end; padding: 7px 14px; border-top: 1px solid var(--linia); flex: none; font-size: 12px; color: var(--tinta-suau); }
-  .taula-peu button { border: 1px solid var(--linia); background: #fff; border-radius: 6px; padding: 4px 9px; font: inherit; font-size: 12px; cursor: pointer; color: var(--tinta); }
-  .taula-peu button:hover:not(:disabled) { background: #eef2ef; }
-  .taula-peu button:disabled { opacity: .45; cursor: default; }
   @media (max-width: 560px) { table.taula th, table.taula td { white-space: normal; } }
 
   /* Llegenda flotant de capes de dades */
@@ -141,7 +143,10 @@
   .llegenda-flotant .opcions { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
   .llegenda-flotant .opcions label { display: flex; gap: 8px; align-items: center; cursor: pointer; }
   .llegenda-flotant input[type="radio"] { accent-color: var(--verd); margin: 0; }
-  .llegenda-flotant .categoria { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 2px 0; }
+  .llegenda-flotant .categoria { display: flex; align-items: center; gap: 8px; font-size: 13px; padding: 3px 4px; border-radius: 4px; margin: 0 -4px; }
+  .llegenda-flotant .categoria[data-camp] { cursor: pointer; }
+  .llegenda-flotant .categoria[data-camp]:hover { background: #eef2ef; }
+  .llegenda-flotant .categoria.categoria-activa { background: #e4efe9; box-shadow: inset 2px 0 0 var(--verd); }
   .mostra-cat { width: 16px; height: 16px; border-radius: 3px; border: 1px solid rgba(0,0,0,.25); flex: none; }
   .rampa { height: 12px; border-radius: 3px; border: 1px solid rgba(0,0,0,.25); }
   .rampa-etiquetes { display: flex; justify-content: space-between; margin-top: 3px; font-size: 12px; color: var(--tinta-suau); font-variant-numeric: tabular-nums; }
@@ -226,6 +231,11 @@
   <div id="cat-espaisverds"></div>
   <p class="nota" id="nota-espaisverds"></p>
 </div>
+<div class="llegenda-flotant" id="llegenda-mapabaseverd" hidden>
+  <h2>Mapa base del verd</h2>
+  <div id="cat-mapabaseverd"></div>
+  <p class="nota" id="nota-mapabaseverd"></p>
+</div>
 <div class="llegenda-flotant" id="llegenda-connectivitat" hidden>
   <h2>Connectivitat ecològica (ICT)</h2>
   <div class="rampa" id="rampa-connectivitat"></div>
@@ -258,8 +268,10 @@
   </div>
 </div>
 <div class="calaix-taula" id="modal-taula" role="region" aria-label="Taula d'atributs" hidden>
+  <div class="calaix-redimensiona" id="calaix-redimensiona" title="Arrossega per canviar l'alçada"></div>
   <div class="calaix-cap">
     <h2 id="modal-taula-titol"></h2>
+    <input type="search" class="taula-cerca" id="taula-cerca" placeholder="Cerca a la taula..." autocomplete="off">
     <span class="taula-comptador" id="taula-comptador"></span>
     <button class="modal-tanca" id="modal-taula-tanca" aria-label="Tanca la taula" style="margin-left:auto">&#10005;</button>
   </div>
@@ -268,11 +280,6 @@
       <thead id="taula-capcalera"></thead>
       <tbody id="taula-cos"></tbody>
     </table>
-  </div>
-  <div class="taula-peu">
-    <span id="taula-pagina-info"></span>
-    <button id="taula-anterior" type="button">&larr; Anterior</button>
-    <button id="taula-seguent" type="button">Següent &rarr;</button>
   </div>
 </div>
 
@@ -313,7 +320,10 @@ const GRUPS = [
       },
       {
         "id": "mapa-base-verd",
-        "nom": "Mapa base del verd"
+        "nom": "Mapa base del verd",
+        "actiu": true,
+        "inicial": false,
+        "taula": true
       }
     ]
   },
@@ -542,7 +552,7 @@ class BotoInici {
 }
 let extensioInicial = null;   // s'omple quan es carrega el límit municipal
 // Features completes (amb geometria) de cada capa, per a la taula d'atributs (s'omplen en carregar cada capa)
-let dadesAliments = [], dadesArbrat = [], dadesEspaisVerds = [];
+let dadesAliments = [], dadesArbrat = [], dadesEspaisVerds = [], dadesMapaVerd = [];
 map.addControl(new BotoInici(), 'bottom-right');
 
 /* ================= Límit municipal ================= */
@@ -658,7 +668,7 @@ function colorArbrat() {
 
 function pintaLlegendaArbrat() {
   document.getElementById('cat-arbrat').innerHTML = ARBRAT.categories
-    .map(c => '<div class="categoria"><span class="mostra-cat" style="background:' + c.color + '; border-radius:50%"></span>' + c.nom + '</div>').join('');
+    .map(c => '<div class="categoria" data-capa="arbrat" data-camp="GRAU_NAT" data-valor="' + c.valor + '"><span class="mostra-cat" style="background:' + c.color + '; border-radius:50%"></span>' + c.nom + '</div>').join('');
   document.getElementById('nota-arbrat').textContent =
     "Arbrat viari i d'espais verds, segons el seu grau de naturalitat (camp GRAU_NAT): 1 = alta, 3 = baixa.";
 }
@@ -736,7 +746,7 @@ function colorEspaisVerds() {
 
 function pintaLlegendaEspaisVerds() {
   document.getElementById('cat-espaisverds').innerHTML = ESPAISVERDS.categories
-    .map(c => '<div class="categoria"><span class="mostra-cat" style="background:' + c.color + '"></span>' + c.nom + '</div>').join('');
+    .map(c => '<div class="categoria" data-capa="espais-verds" data-camp="naturalita" data-valor="' + c.valor + '"><span class="mostra-cat" style="background:' + c.color + '"></span>' + c.nom + '</div>').join('');
   document.getElementById('nota-espaisverds').textContent =
     "Superfícies verdes classificades pel seu nivell de naturalitat (camp naturalita: 1 = baixa, 3 = mitjana). No hi ha superfícies amb naturalitat alta (valor 2) en aquesta capa.";
 }
@@ -789,6 +799,86 @@ async function actualitzaEspaisVerds() {
   }
 }
 document.getElementById('chk-espais-verds').addEventListener('change', actualitzaEspaisVerds);
+
+/* ================= Mapa base del verd (infraestructura verda: class_esp) ================= */
+const MAPAVERD = {
+  url: 'data/mapa_base_verd.geojson',
+  superficieMinima: 10,   // m²: es descarten els polígons més petits (restes de digitalització)
+  categories: [
+    { valor: 'Zona forestal',    nom: 'Zona forestal',    color: '#1f6f5c' },
+    { valor: 'Reserva natural',  nom: 'Reserva natural',  color: '#6a4c93' },
+    { valor: 'Verd litoral',     nom: 'Verd litoral',     color: '#3aa6a0' },
+    { valor: 'Verd urba',        nom: 'Verd urbà',        color: '#7fb37a' },
+    { valor: 'Zona agraria',     nom: 'Zona agrària',     color: '#d9a441' }
+  ],
+  gris: '#c4c9c6'
+};
+
+function colorMapaVerd() {
+  const c = ['case'];
+  MAPAVERD.categories.forEach(cat => { c.push(['==', ['get', 'class_esp'], cat.valor], cat.color); });
+  c.push(MAPAVERD.gris);
+  return c;
+}
+
+function pintaLlegendaMapaVerd() {
+  document.getElementById('cat-mapabaseverd').innerHTML = MAPAVERD.categories
+    .map(c => '<div class="categoria" data-capa="mapa-base-verd" data-camp="class_esp" data-valor="' + esc(c.valor) + '"><span class="mostra-cat" style="background:' + c.color + '"></span>' + c.nom + '</div>').join('');
+  document.getElementById('nota-mapabaseverd').textContent =
+    "Classificació general de la infraestructura verda (camp class_esp). No s'hi mostren els polígons de menys de " + MAPAVERD.superficieMinima + ' m².';
+}
+
+function textMapaVerd(p) {
+  const num = (x, d) => (typeof x === 'number' ? x.toLocaleString('ca-ES', { maximumFractionDigits: d }) : '—');
+  const cat = MAPAVERD.categories.find(c => c.valor === p.class_esp);
+  const rows = [
+    ['Classe', cat ? cat.nom : (p.class_esp || '—')],
+    ['Classe general', p.class_gen],
+    ['Descripció', p.descripcio],
+    ['Superfície', typeof p.area === 'number' ? num(p.area, 0) + ' m²' : null]
+  ];
+  return '<div class="popup"><p class="popup-t">' + esc(cat ? cat.nom : (p.class_esp || 'Mapa base del verd')) + '</p><dl>' +
+    rows.filter(r => r[1] !== undefined && r[1] !== null && r[1] !== '').map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl></div>';
+}
+
+let mapaVerdEstat = 'pendent';
+async function carregaMapaVerd() {
+  mapaVerdEstat = 'carregant';
+  try {
+    const r = await fetch(MAPAVERD.url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const gj = await r.json();
+    // Es descarten els polígons amb superfície inferior al mínim (sovint restes de digitalització sense valor real al mapa)
+    gj.features = (gj.features || []).filter(f => !(typeof f.properties?.area === 'number' && f.properties.area < MAPAVERD.superficieMinima));
+    map.addSource('mapaverd', { type: 'geojson', data: gj });
+    const abans = map.getLayer('limit-linia') ? 'limit-linia' : undefined;
+    map.addLayer({ id: 'mapaverd-farciment', type: 'fill', source: 'mapaverd',
+      paint: { 'fill-color': colorMapaVerd(), 'fill-opacity': 0.8 } }, abans);
+    map.addLayer({ id: 'mapaverd-linia', type: 'line', source: 'mapaverd',
+      paint: { 'line-color': 'rgba(30,40,35,0.35)', 'line-width': 0.4 } }, abans);
+    aplicaOpacitat('mapa-base-verd');
+    dadesMapaVerd = gj.features || [];
+    actualitzaBotoTaula('mapa-base-verd', dadesMapaVerd.length);
+    mapaVerdEstat = 'llest';
+  } catch (e) {
+    console.error('Mapa base del verd:', e);
+    mapaVerdEstat = 'error';
+    const nota = document.getElementById('nota-mapabaseverd');
+    nota.className = 'nota error';
+    nota.textContent = "No s'ha pogut carregar data/mapa_base_verd.geojson. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+  }
+}
+async function actualitzaMapaVerd() {
+  const on = document.getElementById('chk-mapa-base-verd').checked;
+  document.getElementById('llegenda-mapabaseverd').hidden = !on;
+  if (on) pintaLlegendaMapaVerd();
+  if (on && (mapaVerdEstat === 'pendent' || mapaVerdEstat === 'error')) await carregaMapaVerd();
+  if (mapaVerdEstat === 'llest') {
+    const v = on ? 'visible' : 'none';
+    ['mapaverd-farciment', 'mapaverd-linia'].forEach(id => map.setLayoutProperty(id, 'visibility', v));
+  }
+}
+document.getElementById('chk-mapa-base-verd').addEventListener('change', actualitzaMapaVerd);
 
 /* ================= Límit d'estudi ================= */
 const LIMITESTUDI = { url: 'data/limit_estudi.geojson' };
@@ -1102,6 +1192,9 @@ map.on('mousemove', e => {
   if (!sobre && document.getElementById('chk-arbrat').checked && map.getLayer('arbrat-punts')) {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['arbrat-punts'] }).length > 0;
   }
+  if (!sobre && document.getElementById('chk-mapa-base-verd').checked && map.getLayer('mapaverd-farciment')) {
+    sobre = map.queryRenderedFeatures(e.point, { layers: ['mapaverd-farciment'] }).length > 0;
+  }
   map.getCanvas().style.cursor = sobre ? 'default' : '';
 });
 
@@ -1127,6 +1220,10 @@ map.on('click', e => {
   if (document.getElementById('chk-arbrat').checked && map.getLayer('arbrat-punts')) {
     const f = map.queryRenderedFeatures(e.point, { layers: ['arbrat-punts'] });
     if (f.length) parts.push(textArbrat(f[0].properties));
+  }
+  if (document.getElementById('chk-mapa-base-verd').checked && map.getLayer('mapaverd-farciment')) {
+    const f = map.queryRenderedFeatures(e.point, { layers: ['mapaverd-farciment'] });
+    if (f.length) parts.push(textMapaVerd(f[0].properties));
   }
   if (parts.length) {
     new maplibregl.Popup({ maxWidth: '280px' }).setLngLat(e.lngLat)
@@ -1188,6 +1285,10 @@ const OPACITAT = {
     { id: 'espaisverds-farciment', prop: 'fill-opacity', base: 0.85 },
     { id: 'espaisverds-linia', prop: 'line-opacity', base: 1 }
   ],
+  'mapa-base-verd': [
+    { id: 'mapaverd-farciment', prop: 'fill-opacity', base: 0.8 },
+    { id: 'mapaverd-linia', prop: 'line-opacity', base: 1 }
+  ],
   'limit-estudi': [
     { id: 'limitestudi-fill-mascara', prop: 'fill-opacity', base: 0.28 },
     { id: 'limitestudi-halo', prop: 'line-opacity', base: 0.9 },
@@ -1221,6 +1322,10 @@ document.querySelectorAll('.capa input[type="checkbox"]:not(:disabled)').forEach
     if (fila) fila.hidden = !chk.checked;
     const botoTaula = document.getElementById('boto-taula-' + id);
     if (botoTaula) botoTaula.hidden = !chk.checked;
+    if (!chk.checked) {
+      document.querySelectorAll('.categoria.categoria-activa[data-capa="' + id + '"]').forEach(x => x.classList.remove('categoria-activa'));
+      if (typeof seleccionaFeatures === 'function') seleccionaFeatures([]);
+    }
   });
 });
 
@@ -1362,6 +1467,16 @@ const TAULES = {
       ['Gestor', p => p.gestor],
       ['Observacions', p => p.obs]
     ]
+  },
+  'mapa-base-verd': {
+    nom: 'Mapa base del verd',
+    dades: () => dadesMapaVerd,
+    columnes: [
+      ['Classe', p => (MAPAVERD.categories.find(c => c.valor === p.class_esp) || {}).nom || p.class_esp],
+      ['Classe general', p => p.class_gen],
+      ['Descripció', p => p.descripcio],
+      ['Superfície (m²)', p => numCA(p.area, 0)]
+    ]
   }
 };
 
@@ -1375,30 +1490,77 @@ map.on('load', () => {
   map.addSource('seleccio', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
   map.addLayer({ id: 'seleccio-farciment', type: 'fill', source: 'seleccio',
     filter: ['==', ['geometry-type'], 'Polygon'],
-    paint: { 'fill-color': '#e08a00', 'fill-opacity': 0.22 } });
+    paint: { 'fill-color': '#ffd400', 'fill-opacity': 0.25 } });
+  // Halo fosc sota el contorn groc, perquè els límits de cada polígon es distingeixin encara
+  // que n'hi hagi molts junts formant una taca contínua (p. ex. en seleccionar una categoria sencera)
+  map.addLayer({ id: 'seleccio-contorn-halo', type: 'line', source: 'seleccio',
+    filter: ['==', ['geometry-type'], 'Polygon'],
+    paint: { 'line-color': '#1d2b26', 'line-width': 4.5, 'line-opacity': 0.55 } });
   map.addLayer({ id: 'seleccio-contorn', type: 'line', source: 'seleccio',
     filter: ['==', ['geometry-type'], 'Polygon'],
-    paint: { 'line-color': '#e08a00', 'line-width': 3 } });
+    paint: { 'line-color': '#ffd400', 'line-width': 2.5 } });
   map.addLayer({ id: 'seleccio-punt', type: 'circle', source: 'seleccio',
     filter: ['==', ['geometry-type'], 'Point'],
-    paint: { 'circle-radius': 10, 'circle-color': 'rgba(224,138,0,0.25)', 'circle-stroke-width': 3, 'circle-stroke-color': '#e08a00' } });
+    paint: { 'circle-radius': 10, 'circle-color': 'rgba(255,212,0,0.35)', 'circle-stroke-width': 3, 'circle-stroke-color': '#1d2b26' } });
 });
 
-function seleccionaFeature(feature) {
+// Selecciona i ressalta al mapa un conjunt de features (una fila de la taula, o totes les d'una categoria de la llegenda)
+function seleccionaFeatures(features) {
   const font = map.getSource('seleccio');
   if (!font) return;
-  font.setData({ type: 'FeatureCollection', features: feature ? [{ type: 'Feature', geometry: feature.geometry, properties: {} }] : [] });
-  if (!feature || !feature.geometry) return;
-  const b = bbox(feature.geometry);
+  const feats = (features || []).filter(f => f && f.geometry);
+  font.setData({ type: 'FeatureCollection', features: feats.map(f => ({ type: 'Feature', geometry: f.geometry, properties: {} })) });
+  if (!feats.length) return;
+  let x0 = 180, y0 = 90, x1 = -180, y1 = -90;
+  feats.forEach(f => {
+    const b = bbox(f.geometry);
+    x0 = Math.min(x0, b[0][0]); y0 = Math.min(y0, b[0][1]);
+    x1 = Math.max(x1, b[1][0]); y1 = Math.max(y1, b[1][1]);
+  });
   const alturaCalaix = document.getElementById('modal-taula').getBoundingClientRect().height || 0;
   const padding = { top: 60, right: 60, bottom: alturaCalaix + 40, left: 60 };
-  if (b[0][0] === b[1][0] && b[0][1] === b[1][1]) map.flyTo({ center: b[0], zoom: Math.max(map.getZoom(), 17), padding });
-  else map.fitBounds(b, { padding, maxZoom: 18 });
+  if (x0 === x1 && y0 === y1) map.flyTo({ center: [x0, y0], zoom: Math.max(map.getZoom(), 17), padding });
+  else map.fitBounds([[x0, y0], [x1, y1]], { padding, maxZoom: 18 });
+}
+function seleccionaFeature(feature) { seleccionaFeatures(feature ? [feature] : []); }
+
+// Esborra qualsevol selecció activa: al mapa, a la taula i a la llegenda
+function esborraSeleccio() {
+  seleccionaFeatures([]);
+  document.querySelectorAll('#taula-cos tr.seleccionada').forEach(x => x.classList.remove('seleccionada'));
+  document.querySelectorAll('.categoria.categoria-activa').forEach(x => x.classList.remove('categoria-activa'));
 }
 
+// Clic a una categoria de la llegenda: selecciona totes les seves features al mapa (clicar-la de nou ho desfà)
+document.addEventListener('click', e => {
+  const cat = e.target.closest('.categoria[data-camp]');
+  if (!cat) return;
+  const taula = TAULES[cat.dataset.capa];
+  if (!taula) return;
+  const activa = cat.classList.contains('categoria-activa');
+  if (activa) { esborraSeleccio(); return; }
+  esborraSeleccio();
+  cat.classList.add('categoria-activa');
+  const camp = cat.dataset.camp, valor = cat.dataset.valor;
+  const feats = taula.dades().filter(f => String((f.properties || {})[camp]) === valor);
+  seleccionaFeatures(feats);
+});
+
+// Clic sobre el polígon/punt ja seleccionat al mapa: el desselecciona
+map.on('load', () => {
+  ['seleccio-farciment', 'seleccio-punt'].forEach(id => {
+    map.on('click', id, e => {
+      e.preventDefault();
+      esborraSeleccio();
+    });
+    map.on('mouseenter', id, () => { map.getCanvas().style.cursor = 'pointer'; });
+    map.on('mouseleave', id, () => { map.getCanvas().style.cursor = ''; });
+  });
+});
+
 const modalTaula = document.getElementById('modal-taula');
-const MIDA_PAGINA_TAULA = 50;
-let taulaEstat = { columnes: [], files: [], pagina: 0 };
+const campCerca = document.getElementById('taula-cerca');
+let taulaEstat = { columnes: [], totes: [], files: [], cerca: '', ordre: { index: null, dir: 1 } };
 let obridorTaula = null;
 
 function obreTaula(capaId, boto) {
@@ -1407,59 +1569,135 @@ function obreTaula(capaId, boto) {
   obridorTaula = boto || null;
   document.getElementById('modal-taula-titol').textContent = t.nom.toUpperCase();
   taulaEstat.columnes = t.columnes;
-  taulaEstat.files = t.dades();
-  taulaEstat.pagina = 0;
+  taulaEstat.totes = t.dades().slice();
+  taulaEstat.files = taulaEstat.totes.slice();
+  taulaEstat.cerca = '';
+  taulaEstat.ordre = { index: null, dir: 1 };
+  campCerca.value = '';
   renderTaula();
   modalTaula.hidden = false;
 }
 function tancaTaula() {
   modalTaula.hidden = true;
-  seleccionaFeature(null);
+  esborraSeleccio();
   if (obridorTaula) obridorTaula.focus();
 }
 
+// Interpreta el valor (ja formatat, p. ex. "1.234,5") com a número quan es pot, per ordenar bé les columnes numèriques
+function valorOrdenable(v) {
+  if (v === undefined || v === null || v === '') return null;
+  if (typeof v === 'number') return v;
+  const s = String(v).trim();
+  const net = s.replace(/\./g, '').replace(',', '.');
+  if (/^-?\d+(\.\d+)?$/.test(net)) return Number(net);
+  return s.toLowerCase();
+}
+
+// Ordena en el lloc l'array de files donat, segons l'ordre actual (columna + direcció)
+function ordenaFiles(files) {
+  const { index, dir } = taulaEstat.ordre;
+  if (index === null) return files;
+  const fn = taulaEstat.columnes[index][1];
+  files.sort((a, b) => {
+    const va = valorOrdenable(fn(a.properties || {}));
+    const vb = valorOrdenable(fn(b.properties || {}));
+    if (va === null && vb === null) return 0;
+    if (va === null) return 1;
+    if (vb === null) return -1;
+    if (typeof va === 'number' && typeof vb === 'number') return (va - vb) * dir;
+    return String(va).localeCompare(String(vb), 'ca') * dir;
+  });
+  return files;
+}
+
+function ordenaTaula(index) {
+  if (taulaEstat.ordre.index === index) taulaEstat.ordre.dir *= -1;
+  else taulaEstat.ordre = { index, dir: 1 };
+  ordenaFiles(taulaEstat.files);
+  renderTaula();
+}
+
+// Cerca de text lliure: filtra sobre totes les columnes visibles (sense accents ni majúscules)
+const normalitzaCerca = v => String(v ?? '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+
+function filtraTaula(text) {
+  taulaEstat.cerca = text;
+  const terme = normalitzaCerca(text).trim();
+  taulaEstat.files = !terme ? taulaEstat.totes.slice() : taulaEstat.totes.filter(ft => {
+    const p = ft.properties || {};
+    return taulaEstat.columnes.some(c => {
+      const v = c[1](p);
+      return v !== undefined && v !== null && v !== '' && normalitzaCerca(v).includes(terme);
+    });
+  });
+  ordenaFiles(taulaEstat.files);
+  renderTaula();
+}
+campCerca.addEventListener('input', () => filtraTaula(campCerca.value));
+
 function renderTaula() {
-  const { columnes, files, pagina } = taulaEstat;
+  const { columnes, files, totes, ordre } = taulaEstat;
   const total = files.length;
-  const totalPagines = Math.max(1, Math.ceil(total / MIDA_PAGINA_TAULA));
-  const inici = pagina * MIDA_PAGINA_TAULA;
-  const pag = files.slice(inici, inici + MIDA_PAGINA_TAULA);
 
   document.getElementById('taula-capcalera').innerHTML =
-    '<tr>' + columnes.map(c => '<th>' + esc(c[0]) + '</th>').join('') + '</tr>';
-  document.getElementById('taula-cos').innerHTML = pag.length
-    ? pag.map((ft, j) => '<tr data-idx="' + (inici + j) + '">' + columnes.map(c => {
+    '<tr>' + columnes.map((c, i) => {
+      const fletxa = ordre.index === i ? (ordre.dir === 1 ? ' ▲' : ' ▼') : '';
+      return '<th data-idx="' + i + '">' + esc(c[0]) + fletxa + '</th>';
+    }).join('') + '</tr>';
+  document.getElementById('taula-cos').innerHTML = files.length
+    ? files.map((ft, j) => '<tr data-idx="' + j + '">' + columnes.map(c => {
         const v = c[1](ft.properties || {});
         return '<td>' + (v === undefined || v === null || v === '' ? '—' : esc(v)) + '</td>';
       }).join('') + '</tr>').join('')
-    : '<tr><td class="taula-buit" colspan="' + columnes.length + '">Cap registre.</td></tr>';
+    : '<tr><td class="taula-buit" colspan="' + columnes.length + '">Cap registre coincident.</td></tr>';
 
-  document.getElementById('taula-comptador').textContent = total.toLocaleString('ca-ES') + ' registres';
-  document.getElementById('taula-pagina-info').textContent = 'Pàgina ' + (pagina + 1) + ' de ' + totalPagines;
-  document.getElementById('taula-anterior').disabled = pagina <= 0;
-  document.getElementById('taula-seguent').disabled = pagina >= totalPagines - 1;
+  document.getElementById('taula-comptador').textContent = taulaEstat.cerca.trim()
+    ? total.toLocaleString('ca-ES') + ' de ' + totes.length.toLocaleString('ca-ES') + ' registres'
+    : total.toLocaleString('ca-ES') + ' registres';
 }
+document.getElementById('taula-capcalera').addEventListener('click', e => {
+  const th = e.target.closest('th[data-idx]');
+  if (th) ordenaTaula(+th.dataset.idx);
+});
 
 document.querySelectorAll('.boto-taula').forEach(btn => {
   btn.addEventListener('click', () => obreTaula(btn.dataset.capa, btn));
 });
 document.getElementById('modal-taula-tanca').addEventListener('click', tancaTaula);
 document.addEventListener('keydown', e => { if (e.key === 'Escape' && !modalTaula.hidden) tancaTaula(); });
-document.getElementById('taula-anterior').addEventListener('click', () => { if (taulaEstat.pagina > 0) { taulaEstat.pagina--; renderTaula(); } });
-document.getElementById('taula-seguent').addEventListener('click', () => {
-  const totalPagines = Math.max(1, Math.ceil(taulaEstat.files.length / MIDA_PAGINA_TAULA));
-  if (taulaEstat.pagina < totalPagines - 1) { taulaEstat.pagina++; renderTaula(); }
-});
 
-// Clic a una fila: selecciona i centra la geometria corresponent al mapa
+// Clic a una fila: selecciona i centra la geometria corresponent al mapa (tornar a clicar-la la desselecciona)
 document.getElementById('taula-cos').addEventListener('click', e => {
   const tr = e.target.closest('tr[data-idx]');
   if (!tr) return;
-  document.querySelectorAll('#taula-cos tr.seleccionada').forEach(x => x.classList.remove('seleccionada'));
+  const jaSeleccionada = tr.classList.contains('seleccionada');
+  esborraSeleccio();
+  if (jaSeleccionada) return;
   tr.classList.add('seleccionada');
   const feature = taulaEstat.files[+tr.dataset.idx];
   seleccionaFeature(feature);
 });
+
+// Nansa superior del calaix: arrossega cap amunt/avall per canviar-ne l'alçada
+(function () {
+  const nansa = document.getElementById('calaix-redimensiona');
+  let arrossegant = false;
+  nansa.addEventListener('pointerdown', e => {
+    arrossegant = true;
+    nansa.classList.add('actiu');
+    nansa.setPointerCapture(e.pointerId);
+    e.preventDefault();
+  });
+  nansa.addEventListener('pointermove', e => {
+    if (!arrossegant) return;
+    const alt = window.innerHeight - e.clientY;
+    const min = 140, max = Math.round(window.innerHeight * 0.88);
+    modalTaula.style.height = Math.min(max, Math.max(min, alt)) + 'px';
+  });
+  const atura = () => { arrossegant = false; nansa.classList.remove('actiu'); };
+  nansa.addEventListener('pointerup', atura);
+  nansa.addEventListener('pointercancel', atura);
+})();
 </script>
 </body>
 </html>
