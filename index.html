@@ -223,12 +223,9 @@
 </div>
 <div class="llegenda-flotant" id="llegenda-svf" hidden>
   <h2>Sky View Factor</h2>
-  <div class="rampa" id="rampa-svf"></div>
-  <div class="rampa-etiquetes" id="etiquetes-svf"></div>
-  <div class="sense"><span class="mostra-transparent"></span><span>Sense dada (transparent)</span></div>
+  <div id="llegenda-svf-cos"></div>
   <p class="nota" id="nota-svf"></p>
-</div>
-<div class="llegenda-flotant" id="llegenda-arbrat" hidden>
+</div><div class="llegenda-flotant" id="llegenda-arbrat" hidden>
   <h2>Inventari d'arbrat: grau de naturalitat</h2>
   <div id="cat-arbrat"></div>
   <p class="nota" id="nota-arbrat"></p>
@@ -619,6 +616,9 @@ map.on('load', async () => {
     aplicaOpacitat('limit');
     extensioInicial = bbox(feature.geometry);
     map.fitBounds(extensioInicial, { padding: 60, duration: 0 });
+    // No es pot allunyar ni desplaçar més enllà de la vista inicial
+    map.setMinZoom(Math.max(10, map.getZoom()));
+    map.setMaxBounds(map.getBounds());
     estat.classList.add('amagat');
   } catch (e) {
     console.error(e);
@@ -1194,7 +1194,6 @@ map.on('mousemove', e => {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['aliments-farciment'] }).length > 0;
   }
   if (!sobre && document.getElementById('chk-biomassa-foliar').checked) sobre = valorBiomassa(e.lngLat) > 0;
-  if (!sobre && document.getElementById('chk-reg-microclima').checked) sobre = valorSVF(e.lngLat) !== null;
   if (!sobre && document.getElementById('chk-connectivitat').checked) sobre = valorICT(e.lngLat) !== null;
   if (!sobre && document.getElementById('chk-espais-verds').checked && map.getLayer('espaisverds-farciment')) {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['espaisverds-farciment'] }).length > 0;
@@ -1218,10 +1217,6 @@ map.on('click', e => {
   if (document.getElementById('chk-biomassa-foliar').checked) {
     const v = valorBiomassa(e.lngLat);
     if (v > 0 || (v === 0 && parts.length === 0)) parts.push(textBiomassa(v));
-  }
-  if (document.getElementById('chk-reg-microclima').checked) {
-    const v = valorSVF(e.lngLat);
-    if (v !== null) parts.push(textSVF(v));
   }
   if (document.getElementById('chk-connectivitat').checked) {
     const v = valorICT(e.lngLat);
@@ -1278,63 +1273,67 @@ map.on('error', e => {
   nota.textContent = "No s'ha pogut carregar data/bf_2016_2017.png. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
 });
 
+// Sky View Factor: servei ArcGIS REST de l'AMB (Export Map; la memòria cau és en EPSG:25831, però l'export el reprojecta a Web Mercator)
 const SVF = {
-  url: 'data/svf_areaestudi.png',
-  graella: 'data/svf_areaestudi.json',
-  nom: 'Sky View Factor', unitat: '%',
-  coordenades: [[1.9932269815338635, 41.32706314046145], [2.037017297678032, 41.32706314046145], [2.037017297678032, 41.29947037852844], [1.9932269815338635, 41.29947037852844]],
-  ramp: ['#000000', '#404040', '#808080', '#bfbfbf', '#ffffff'],
-  parades: [0, 15, 30, 45, 60],
-  escala: 100 / 255   // el ràster original és un byte (0-255); el convertim a percentatge
+  servei: 'https://ide.amb.cat/geoserveis/rest/services/sky_view_factor_25831/MapServer',
+  nom: 'Sky View Factor'
 };
 let svfEstat = 'pendent';
-let graellaSVF = null;
 
-async function carregaGraellaSVF() {
+// Protocol propi 'svf://z/x/y': baixa la tessel·la de l'export de l'AMB i la retalla amb el límit municipal
+maplibregl.addProtocol('svf', async (params, controlador) => {
+  const [z, x, y] = params.url.replace('svf://', '').split('/').map(Number);
+  const n = Math.pow(2, z), mig = 20037508.342789244, costat = 2 * mig / n;
+  const x0 = x * costat - mig, y1 = mig - y * costat;
+  const url = SVF.servei + '/export?bbox=' + [x0, y1 - costat, x0 + costat, y1].join(',') +
+    '&bboxSR=3857&imageSR=3857&size=256,256&format=png32&transparent=true&f=image';
+  const r = await fetch(url, { signal: controlador && controlador.signal });
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  const imatge = await createImageBitmap(await r.blob());
+  const llenç = new OffscreenCanvas(256, 256), g = llenç.getContext('2d');
+  if (limitFeature) {
+    const geom = limitFeature.geometry;
+    const poligons = geom.type === 'Polygon' ? [geom.coordinates] : geom.coordinates;
+    g.beginPath();
+    poligons.forEach(pol => pol.forEach(anell => anell.forEach(([lon, lat], i) => {
+      const px = ((lon + 180) / 360 * n - x) * 256;
+      const f = Math.log(Math.tan(Math.PI / 4 + lat * Math.PI / 360));
+      const py = ((1 - f / Math.PI) / 2 * n - y) * 256;
+      if (i === 0) g.moveTo(px, py); else g.lineTo(px, py);
+    })));
+    g.clip('evenodd');
+  }
+  g.drawImage(imatge, 0, 0, 256, 256);
+  const blob = await llenç.convertToBlob({ type: 'image/png' });
+  return { data: await blob.arrayBuffer() };
+});
+
+// Llegenda del servei (JSON amb la imatge en base64); si no es pot carregar, simplement no es mostra
+async function carregaLlegendaSVF() {
   try {
-    const r = await fetch(SVF.graella);
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const g = await r.json();
-    const d = new Float32Array(g.amplada * g.alcada);
-    for (let k = 0; k < g.i.length; k++) d[g.i[k]] = g.v[k];
-    graellaSVF = { ...g, d };
-  } catch (e) { console.warn('Graella de SVF no disponible:', e); }
-}
-
-// Valor del píxel sota un punt, en percentatge (0-100), o null si és fora de l'extensió o sense graella
-function valorSVF(lngLat) {
-  const v = valorGraella(graellaSVF, lngLat);
-  return v === null || v === undefined ? null : v * SVF.escala;
-}
-
-function textSVF(v) {
-  return '<div class="popup"><p class="popup-t">' + SVF.nom + '</p><dl><dt>Valor</dt><dd>' +
-    v.toLocaleString('ca-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + ' ' + SVF.unitat + '</dd></dl></div>';
-}
-
-function pintaLlegendaSVF() {
-  const n = SVF.parades.length;
-  document.getElementById('rampa-svf').style.background = 'linear-gradient(to right, ' + SVF.ramp.join(', ') + ')';
-  document.getElementById('etiquetes-svf').innerHTML =
-    SVF.parades.map((p, i) => '<span>' + (i === n - 1 ? '≥ ' : '') + p + '%</span>').join('');
-  const nota = document.getElementById('nota-svf');
-  nota.className = 'nota';
-  nota.textContent = 'Fracció de cel visible des de cada punt: 0% (negre) és un cel totalment tapat (carrers estrets, vegetació densa), 100% (blanc) és cel completament obert.';
+    const r = await fetch(SVF.servei + '/legend?f=json');
+    const j = await r.json();
+    const l = j.layers && j.layers[0] && j.layers[0].legend ? j.layers[0].legend : [];
+    document.getElementById('llegenda-svf-cos').innerHTML = l.map(e =>
+      '<div class="sense"><img alt="" src="data:' + e.contentType + ';base64,' + e.imageData + '"><span>' + esc(e.label || '') + '</span></div>').join('');
+  } catch (e) { console.warn('Llegenda del SVF no disponible:', e); }
 }
 
 function actualitzaSVF() {
   const chk = document.getElementById('chk-reg-microclima');
   document.getElementById('llegenda-svf').hidden = !chk.checked;
-  if (chk.checked) pintaLlegendaSVF();
   if (chk.checked && svfEstat === 'pendent') {
-    map.addSource('svf', { type: 'image', url: SVF.url, coordinates: SVF.coordenades });
+    carregaLlegendaSVF();
+    const nota = document.getElementById('nota-svf');
+    nota.className = 'nota';
+    nota.textContent = "Fracció de cel visible des de cada punt. Font: Àrea Metropolitana de Barcelona (servei de l'AMB).";
+    map.addSource('svf', { type: 'raster', tiles: ['svf://{z}/{x}/{y}'], tileSize: 256, attribution: '© <a href="https://www.amb.cat" target="_blank" rel="noopener">AMB</a>' });
     const abans = map.getLayer('biomassa-raster') ? 'biomassa-raster'
       : (map.getLayer('aliments-farciment') ? 'aliments-farciment' : (map.getLayer('limit-linia') ? 'limit-linia' : undefined));
     map.addLayer({ id: 'svf-raster', type: 'raster', source: 'svf',
-      paint: { 'raster-opacity': 0.85, 'raster-resampling': 'nearest', 'raster-fade-duration': 0 } }, abans);
+      paint: { 'raster-opacity': 0.85, 'raster-fade-duration': 0 } }, abans);
     svfEstat = 'llest';
     aplicaOpacitat('reg-microclima');
-    carregaGraellaSVF();
   }
   if (svfEstat === 'llest') map.setLayoutProperty('svf-raster', 'visibility', chk.checked ? 'visible' : 'none');
 }
@@ -1343,7 +1342,7 @@ map.on('error', e => {
   if (e.sourceId !== 'svf') return;
   const nota = document.getElementById('nota-svf');
   nota.className = 'nota error';
-  nota.textContent = "No s'ha pogut carregar data/svf_areaestudi.png. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+  nota.textContent = "No s'ha pogut carregar el servei de l'AMB (ide.amb.cat).";
 });
 
 /* ================= Opacitat de les capes ================= */
