@@ -468,6 +468,19 @@ const GRUPS = [
     ]
   },
   {
+    "nom": "Biodiversitat",
+    "capes": [
+      {
+        "id": "papallones",
+        "nom": "Papallones"
+      },
+      {
+        "id": "ocells",
+        "nom": "Ocells"
+      }
+    ]
+  },
+  {
     "nom": "Límits administratius",
     "obert": true,
     "capes": [
@@ -1428,7 +1441,7 @@ const esc = t => String(t ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': 
 let METADADES = null;   // null = encara no carregat, false = error
 async function carregaMetadades() {
   try {
-    const r = await fetch(CONFIG.fitxerMetadades);
+    const r = await fetch(CONFIG.fitxerMetadades, { cache: 'no-cache' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     METADADES = await r.json();
   } catch (e) { console.error('Metadades:', e); METADADES = false; }

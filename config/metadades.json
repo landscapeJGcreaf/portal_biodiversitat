@@ -493,6 +493,42 @@
       "llicencia": "",
       "restriccionsUs": "",
       "enllacos": []
+    },
+    "papallones": {
+      "titol": "Papallones",
+      "resum": "",
+      "categoriaTematica": "Medi ambient",
+      "dataReferencia": "",
+      "tipusData": "",
+      "estat": "Pendent d'incorporar al visor",
+      "frequenciaActualitzacio": "",
+      "tipusRepresentacio": "",
+      "format": "",
+      "sistemaReferencia": "",
+      "resolucio": "",
+      "extensio": "Municipi de Viladecans",
+      "procedencia": "",
+      "llicencia": "",
+      "restriccionsUs": "",
+      "enllacos": []
+    },
+    "ocells": {
+      "titol": "Ocells",
+      "resum": "",
+      "categoriaTematica": "Medi ambient",
+      "dataReferencia": "",
+      "tipusData": "",
+      "estat": "Pendent d'incorporar al visor",
+      "frequenciaActualitzacio": "",
+      "tipusRepresentacio": "",
+      "format": "",
+      "sistemaReferencia": "",
+      "resolucio": "",
+      "extensio": "Municipi de Viladecans",
+      "procedencia": "",
+      "llicencia": "",
+      "restriccionsUs": "",
+      "enllacos": []
     }
   }
 }
