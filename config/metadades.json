@@ -132,9 +132,9 @@
       "sistemaReferencia": "ETRS89 / UTM 31N (EPSG:25831)",
       "resolucio": "30 m",
       "extensio": "Municipi de Viladecans (X 415.320-422.490, Y 4.569.210-4.576.710)",
-      "procedencia": "Índex de Connectivitat Ecològica Terrestre (Minuartia i CREAF). Fitxer ict_2022_viladecans.tif.",
+      "procedencia": "Índex de Connectivitat Ecològica Terrestre (Minuartia i CREAF). Fitxer ict_2022_viladecans.tif. Paràmetres del càlcul (categoria focal, radi d'exploració, distància entre punts focals, taules d'afinitat i impedància) pendents de confirmar.",
       "llicencia": "",
-      "restriccionsUs": "Paràmetres del càlcul (categoria focal, radi d'exploració, distància entre punts focals, taules d'afinitat i impedància) pendents de confirmar.",
+      "restriccionsUs": "",
       "enllacos": [],
       "organitzacio": "CREAF",
       "persona": "Javier Gordillo",
@@ -309,9 +309,9 @@
       "sistemaReferencia": "ETRS89 / UTM 31N (EPSG:25831)",
       "resolucio": "20 m",
       "extensio": "Municipi de Viladecans (X 415.320-422.500, Y 4.569.220-4.576.720)",
-      "procedencia": "Fitxer variables-biofisiques-arbrat-v1r1-bf-2016-2017_Viladecans.tif (variables biofísiques de l'arbrat). A la taula de capes consta com a Biomassa foliar (CREAF).",
+      "procedencia": "Fitxer variables-biofisiques-arbrat-v1r1-bf-2016-2017_Viladecans.tif (variables biofísiques de l'arbrat). A la taula de capes consta com a Biomassa foliar (CREAF). Valors en t/ha (unitat pendent de confirmar). El valor 0 correspon a «sense dada».",
       "llicencia": "",
-      "restriccionsUs": "Valors en t/ha (unitat pendent de confirmar). El valor 0 correspon a «sense dada».",
+      "restriccionsUs": "",
       "enllacos": []
     },
     "carboni-aeri": {
