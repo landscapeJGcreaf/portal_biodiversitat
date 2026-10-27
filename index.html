@@ -153,7 +153,7 @@
   .llegenda-flotant .sense { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
   .mostra-transparent { width: 22px; height: 14px; border-radius: 2px; background: repeating-conic-gradient(#e3e7e5 0% 25%, #fff 0% 50%) 50% / 8px 8px; border: 1px solid rgba(0,0,0,.25); flex: none; }
   .mostra-gris { width: 22px; height: 14px; border-radius: 2px; background: #c4c9c6; border: 1px solid rgba(0,0,0,.25); flex: none; }
-  #cat-cobertesn3, #cat-cobertesn1f { max-height: 40vh; overflow-y: auto; }
+  #cat-cobertesn3, #cat-cobertesn1f, #cat-cobertesn309 { max-height: 40vh; overflow-y: auto; }
   .llegenda-flotant .nota { margin: 10px 0 0; font-size: 12px; line-height: 1.4; color: var(--tinta-suau); }
   .llegenda-flotant .error { color: #9b2c1f; }
   .maplibregl-popup-content { font-family: inherit; font-size: 13px; line-height: 1.45; padding: 12px 14px; border-radius: 8px; max-width: 280px; }
@@ -245,6 +245,11 @@
   <h2>Cobertes del sòl N1F (2020)</h2>
   <div id="cat-cobertesn1f"></div>
   <p class="nota" id="nota-cobertesn1f"></p>
+</div>
+<div class="llegenda-flotant" id="llegenda-cobertesn309" hidden>
+  <h2>Cobertes del sòl N3 (2009)</h2>
+  <div id="cat-cobertesn309"></div>
+  <p class="nota" id="nota-cobertesn309"></p>
 </div>
 <div class="llegenda-flotant" id="llegenda-cobertesn3" hidden>
   <h2>Cobertes del sòl N3 (2020)</h2>
@@ -384,7 +389,7 @@ const GRUPS = [
                 "nom": "N3",
                 "capes": [
                   { "id": "cobertes-n3-2020", "nom": "2020", "actiu": true, "inicial": false, "taula": true },
-                  { "id": "cobertes-n3-2009", "nom": "2009" }
+                  { "id": "cobertes-n3-2009", "nom": "2009", "actiu": true, "inicial": false, "taula": true }
                 ]
               },
               {
@@ -577,7 +582,7 @@ class BotoInici {
 }
 let extensioInicial = null;   // s'omple quan es carrega el límit municipal
 // Features completes (amb geometria) de cada capa, per a la taula d'atributs (s'omplen en carregar cada capa)
-let dadesAliments = [], dadesArbrat = [], dadesEspaisVerds = [], dadesMapaVerd = [], dadesCobertesN3 = [], dadesCobertesN1F = [];
+let dadesAliments = [], dadesArbrat = [], dadesEspaisVerds = [], dadesMapaVerd = [], dadesCobertesN3 = [], dadesCobertesN1F = [], dadesCobertesN309 = [];
 map.addControl(new BotoInici(), 'bottom-right');
 
 /* ================= Límit municipal ================= */
@@ -1100,6 +1105,78 @@ async function actualitzaCobertesN1F() {
 }
 document.getElementById('chk-cobertes-n1f-2020').addEventListener('change', actualitzaCobertesN1F);
 
+/* ================= Cobertes del sòl N3 2009 (MCSC, camp cat_niv_3) ================= */
+const COBERTESN309 = {
+  url: 'data/cobertes_n3_2009.geojson',
+  categories: COBERTESN3.categories.concat([
+    { valor: 'Abocadors', nom: 'Abocadors', color: '#8c6d5a' },
+    { valor: 'Lleres naturals', nom: 'Lleres naturals', color: '#9fd3e6' }
+  ]),
+  gris: '#c4c9c6'
+};
+
+function colorCobertesN309() {
+  const c = ['case'];
+  COBERTESN309.categories.forEach(cat => { c.push(['==', ['get', 'cat_niv_3'], cat.valor], cat.color); });
+  c.push(COBERTESN309.gris);
+  return c;
+}
+
+function pintaLlegendaCobertesN309() {
+  document.getElementById('cat-cobertesn309').innerHTML = COBERTESN309.categories
+    .map(c => '<div class="categoria" data-capa="cobertes-n3-2009" data-camp="cat_niv_3" data-valor="' + esc(c.valor) + '"><span class="mostra-cat" style="background:' + c.color + '"></span>' + esc(c.nom) + '</div>').join('');
+  document.getElementById('nota-cobertesn309').textContent =
+    'Mapa de Cobertes del Sòl de Catalunya (MCSC) 2009, nivell 3 (camp cat_niv_3).';
+}
+
+function textCobertesN309(p) {
+  const cat = COBERTESN309.categories.find(c => c.valor === p.cat_niv_3);
+  const rows = [
+    ['Categoria (N3)', cat ? cat.nom : p.cat_niv_3],
+    ['Categoria N1F', p.cat_niv_1f],
+    ['Categoria N1', p.cat_niv_1]
+  ];
+  return '<div class="popup"><p class="popup-t">' + esc(cat ? cat.nom : (p.cat_niv_3 || 'Cobertes del sòl N3')) + '</p><dl>' +
+    rows.filter(r => r[1] !== undefined && r[1] !== null && r[1] !== '').map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl></div>';
+}
+
+let cobertesN309Estat = 'pendent';
+async function carregaCobertesN309() {
+  cobertesN309Estat = 'carregant';
+  try {
+    const r = await fetch(COBERTESN309.url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const gj = await r.json();
+    map.addSource('cobertesn309', { type: 'geojson', data: gj });
+    const abans = map.getLayer('limit-linia') ? 'limit-linia' : undefined;
+    map.addLayer({ id: 'cobertesn309-farciment', type: 'fill', source: 'cobertesn309',
+      paint: { 'fill-color': colorCobertesN309(), 'fill-opacity': 0.8 } }, abans);
+    map.addLayer({ id: 'cobertesn309-linia', type: 'line', source: 'cobertesn309',
+      paint: { 'line-color': 'rgba(30,40,35,0.35)', 'line-width': 0.4 } }, abans);
+    aplicaOpacitat('cobertes-n3-2009');
+    dadesCobertesN309 = gj.features || [];
+    actualitzaBotoTaula('cobertes-n3-2009', dadesCobertesN309.length);
+    cobertesN309Estat = 'llest';
+  } catch (e) {
+    console.error('Cobertes N3 2009:', e);
+    cobertesN309Estat = 'error';
+    const nota = document.getElementById('nota-cobertesn309');
+    nota.className = 'nota error';
+    nota.textContent = "No s'ha pogut carregar data/cobertes_n3_2009.geojson. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+  }
+}
+async function actualitzaCobertesN309() {
+  const on = document.getElementById('chk-cobertes-n3-2009').checked;
+  document.getElementById('llegenda-cobertesn309').hidden = !on;
+  if (on) pintaLlegendaCobertesN309();
+  if (on && (cobertesN309Estat === 'pendent' || cobertesN309Estat === 'error')) await carregaCobertesN309();
+  if (cobertesN309Estat === 'llest') {
+    const v = on ? 'visible' : 'none';
+    ['cobertesn309-farciment', 'cobertesn309-linia'].forEach(id => map.setLayoutProperty(id, 'visibility', v));
+  }
+}
+document.getElementById('chk-cobertes-n3-2009').addEventListener('change', actualitzaCobertesN309);
+
 /* ================= Límit d'estudi ================= */
 const LIMITESTUDI = { url: 'data/limit_estudi.geojson' };
 let limitEstudiEstat = 'pendent';
@@ -1412,6 +1489,9 @@ map.on('mousemove', e => {
   if (!sobre && document.getElementById('chk-arbrat').checked && map.getLayer('arbrat-punts')) {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['arbrat-punts'] }).length > 0;
   }
+  if (!sobre && document.getElementById('chk-cobertes-n3-2009').checked && map.getLayer('cobertesn309-farciment')) {
+    sobre = map.queryRenderedFeatures(e.point, { layers: ['cobertesn309-farciment'] }).length > 0;
+  }
   if (!sobre && document.getElementById('chk-cobertes-n1f-2020').checked && map.getLayer('cobertesn1f-farciment')) {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['cobertesn1f-farciment'] }).length > 0;
   }
@@ -1446,6 +1526,10 @@ map.on('click', e => {
   if (document.getElementById('chk-arbrat').checked && map.getLayer('arbrat-punts')) {
     const f = map.queryRenderedFeatures(e.point, { layers: ['arbrat-punts'] });
     if (f.length) parts.push(textArbrat(f[0].properties));
+  }
+  if (document.getElementById('chk-cobertes-n3-2009').checked && map.getLayer('cobertesn309-farciment')) {
+    const f = map.queryRenderedFeatures(e.point, { layers: ['cobertesn309-farciment'] });
+    if (f.length) parts.push(textCobertesN309(f[0].properties));
   }
   if (document.getElementById('chk-cobertes-n1f-2020').checked && map.getLayer('cobertesn1f-farciment')) {
     const f = map.queryRenderedFeatures(e.point, { layers: ['cobertesn1f-farciment'] });
@@ -1593,6 +1677,10 @@ const OPACITAT = {
   'espais-verds': [
     { id: 'espaisverds-farciment', prop: 'fill-opacity', base: 0.85 },
     { id: 'espaisverds-linia', prop: 'line-opacity', base: 1 }
+  ],
+  'cobertes-n3-2009': [
+    { id: 'cobertesn309-farciment', prop: 'fill-opacity', base: 0.8 },
+    { id: 'cobertesn309-linia', prop: 'line-opacity', base: 1 }
   ],
   'cobertes-n1f-2020': [
     { id: 'cobertesn1f-farciment', prop: 'fill-opacity', base: 0.8 },
@@ -1783,6 +1871,15 @@ const TAULES = {
       ['Tipus de reg', p => p.tipus_reg],
       ['Gestor', p => p.gestor],
       ['Observacions', p => p.obs]
+    ]
+  },
+  'cobertes-n3-2009': {
+    nom: 'Cobertes del sòl N3 (2009)',
+    dades: () => dadesCobertesN309,
+    columnes: [
+      ['Categoria (N3)', p => p.cat_niv_3],
+      ['Categoria N1F', p => p.cat_niv_1f],
+      ['Categoria N1', p => p.cat_niv_1]
     ]
   },
   'cobertes-n1f-2020': {
