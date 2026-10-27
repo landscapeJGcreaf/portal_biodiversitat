@@ -153,6 +153,7 @@
   .llegenda-flotant .sense { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
   .mostra-transparent { width: 22px; height: 14px; border-radius: 2px; background: repeating-conic-gradient(#e3e7e5 0% 25%, #fff 0% 50%) 50% / 8px 8px; border: 1px solid rgba(0,0,0,.25); flex: none; }
   .mostra-gris { width: 22px; height: 14px; border-radius: 2px; background: #c4c9c6; border: 1px solid rgba(0,0,0,.25); flex: none; }
+  #cat-cobertesn3, #cat-cobertesn1f { max-height: 40vh; overflow-y: auto; }
   .llegenda-flotant .nota { margin: 10px 0 0; font-size: 12px; line-height: 1.4; color: var(--tinta-suau); }
   .llegenda-flotant .error { color: #9b2c1f; }
   .maplibregl-popup-content { font-family: inherit; font-size: 13px; line-height: 1.45; padding: 12px 14px; border-radius: 8px; max-width: 280px; }
@@ -239,6 +240,16 @@
   <h2>Mapa base del verd</h2>
   <div id="cat-mapabaseverd"></div>
   <p class="nota" id="nota-mapabaseverd"></p>
+</div>
+<div class="llegenda-flotant" id="llegenda-cobertesn1f" hidden>
+  <h2>Cobertes del sòl N1F (2020)</h2>
+  <div id="cat-cobertesn1f"></div>
+  <p class="nota" id="nota-cobertesn1f"></p>
+</div>
+<div class="llegenda-flotant" id="llegenda-cobertesn3" hidden>
+  <h2>Cobertes del sòl N3 (2020)</h2>
+  <div id="cat-cobertesn3"></div>
+  <p class="nota" id="nota-cobertesn3"></p>
 </div>
 <div class="llegenda-flotant" id="llegenda-connectivitat" hidden>
   <h2>Connectivitat ecològica (ICT)</h2>
@@ -372,14 +383,14 @@ const GRUPS = [
               {
                 "nom": "N3",
                 "capes": [
-                  { "id": "cobertes-n3-2020", "nom": "2020" },
+                  { "id": "cobertes-n3-2020", "nom": "2020", "actiu": true, "inicial": false, "taula": true },
                   { "id": "cobertes-n3-2009", "nom": "2009" }
                 ]
               },
               {
                 "nom": "N1F",
                 "capes": [
-                  { "id": "cobertes-n1f-2020", "nom": "2020" },
+                  { "id": "cobertes-n1f-2020", "nom": "2020", "actiu": true, "inicial": false, "taula": true },
                   { "id": "cobertes-n1f-2009", "nom": "2009" }
                 ]
               }
@@ -566,7 +577,7 @@ class BotoInici {
 }
 let extensioInicial = null;   // s'omple quan es carrega el límit municipal
 // Features completes (amb geometria) de cada capa, per a la taula d'atributs (s'omplen en carregar cada capa)
-let dadesAliments = [], dadesArbrat = [], dadesEspaisVerds = [], dadesMapaVerd = [];
+let dadesAliments = [], dadesArbrat = [], dadesEspaisVerds = [], dadesMapaVerd = [], dadesCobertesN3 = [], dadesCobertesN1F = [];
 map.addControl(new BotoInici(), 'bottom-right');
 
 /* ================= Límit municipal ================= */
@@ -897,6 +908,198 @@ async function actualitzaMapaVerd() {
 }
 document.getElementById('chk-mapa-base-verd').addEventListener('change', actualitzaMapaVerd);
 
+/* ================= Cobertes del sòl N3 2020 (MCSC, camp cat_niv_3) ================= */
+const COBERTESN3 = {
+  url: 'data/cobertes_n3_2020.geojson',
+  categories: [
+    { valor: 'Aeroports', nom: 'Aeroports', color: '#67629a' },
+    { valor: 'Autopistes i autovies', nom: 'Autopistes i autovies', color: '#adaaca' },
+    { valor: 'Basses agricoles', nom: 'Basses agricoles', color: '#185f94' },
+    { valor: 'Basses urbanes', nom: 'Basses urbanes', color: '#ffcbf2' },
+    { valor: 'Boscos clars (no de ribera)', nom: 'Boscos clars (no de ribera)', color: '#a0ffa0' },
+    { valor: 'Boscos clars de ribera', nom: 'Boscos clars de ribera', color: '#00c800' },
+    { valor: 'Boscos densos (no de ribera)', nom: 'Boscos densos (no de ribera)', color: '#689010' },
+    { valor: 'Boscos densos de ribera', nom: 'Boscos densos de ribera', color: '#00ff00' },
+    { valor: 'Boscos en franges de proteccio', nom: 'Boscos en franges de protecció', color: '#80ff80' },
+    { valor: 'Campings', nom: 'Campings', color: '#952bff' },
+    { valor: 'Canals artificials', nom: 'Canals artificials', color: '#12466d' },
+    { valor: 'Carreteres', nom: 'Carreteres', color: '#827dad' },
+    { valor: 'Cementiris', nom: 'Cementiris', color: '#000000' },
+    { valor: 'Conreus abandonats - prats', nom: 'Conreus abandonats - prats', color: '#ffff00' },
+    { valor: 'Conreus en transformacio', nom: 'Conreus en transformació', color: '#f2e4e4' },
+    { valor: 'Conreus herbacis (no arrossars)', nom: 'Conreus herbacis (no arrossars)', color: '#f4c8a4' },
+    { valor: 'Conreus llenyosos (no vinyes)', nom: 'Conreus llenyosos (no vinyes)', color: '#7f4219' },
+    { valor: 'Granges', nom: 'Granges', color: '#c8008a' },
+    { valor: "Grans vials i zones d'aparcament", nom: "Grans vials i zones d'aparcament", color: '#fd00c5' },
+    { valor: 'Hivernacles', nom: 'Hivernacles', color: '#d7fff5' },
+    { valor: 'Llacunes litorals', nom: 'Llacunes litorals', color: '#0000dc' },
+    { valor: 'Matollars', nom: 'Matollars', color: '#c0c09c' },
+    { valor: 'Plantacions de pollancres', nom: 'Plantacions de pollancres', color: '#005a00' },
+    { valor: "Plantacions d'eucaliptus", nom: "Plantacions d'eucaliptus", color: '#c9dc23' },
+    { valor: 'Platges', nom: 'Platges', color: '#f5df78' },
+    { valor: 'Prats i herbassars', nom: 'Prats i herbassars', color: '#ffff82' },
+    { valor: 'Prats i herbassars - Boscos tallats arreu', nom: 'Prats i herbassars - Boscos tallats arreu', color: '#95ff49' },
+    { valor: 'Rius', nom: 'Rius', color: '#3737ff' },
+    { valor: 'Sols nus forestals', nom: 'Sols nus forestals', color: '#ff972f' },
+    { valor: 'Sols nus urbans', nom: 'Sols nus urbans', color: '#ffcbef' },
+    { valor: 'Urbanitzat residencial compacte', nom: 'Urbanitzat residencial compacte', color: '#ff53ca' },
+    { valor: 'Urbanitzat residencial lax', nom: 'Urbanitzat residencial lax', color: '#ffa4e2' },
+    { valor: "Vegetacio d'aiguamolls litorals", nom: "Vegetació d'aiguamolls litorals", color: '#80ffff' },
+    { valor: 'Vies de ferrocarril', nom: 'Vies de ferrocarril', color: '#4a466e' },
+    { valor: "Zones d'esport i lleure (excepte campings i camps de golf)", nom: "Zones d'esport i lleure (excepte campings i camps de golf)", color: '#6200c4' },
+    { valor: "Zones d'extraccio minera", nom: "Zones d'extracció minera", color: '#000000' },
+    { valor: 'Zones industrials i comercials', nom: 'Zones industrials i comercials', color: '#72004f' },
+    { valor: 'Zones portuaries', nom: 'Zones portuàries', color: '#2f2d46' },
+    { valor: 'Zones verdes urbanes', nom: 'Zones verdes urbanes', color: '#12466d' },
+    { valor: 'Zones verdes viaries', nom: 'Zones verdes viàries', color: '#289700' }
+  ],
+  gris: '#c4c9c6'
+};
+
+function colorCobertesN3() {
+  const c = ['case'];
+  COBERTESN3.categories.forEach(cat => { c.push(['==', ['get', 'cat_niv_3'], cat.valor], cat.color); });
+  c.push(COBERTESN3.gris);
+  return c;
+}
+
+function pintaLlegendaCobertesN3() {
+  document.getElementById('cat-cobertesn3').innerHTML = COBERTESN3.categories
+    .map(c => '<div class="categoria" data-capa="cobertes-n3-2020" data-camp="cat_niv_3" data-valor="' + esc(c.valor) + '"><span class="mostra-cat" style="background:' + c.color + '"></span>' + esc(c.nom) + '</div>').join('');
+  document.getElementById('nota-cobertesn3').textContent =
+    'Mapa de Cobertes del Sòl de Catalunya (MCSC) 2020, nivell 3 (camp cat_niv_3).';
+}
+
+function textCobertesN3(p) {
+  const cat = COBERTESN3.categories.find(c => c.valor === p.cat_niv_3);
+  const rows = [
+    ['Categoria (N3)', cat ? cat.nom : p.cat_niv_3],
+    ['Descripció', p.nom_simple],
+    ['Categoria N1F', p.cat_niv_1f],
+    ['Categoria N1', p.cat_niv_1],
+    ['Tipus', p.categoria_]
+  ];
+  return '<div class="popup"><p class="popup-t">' + esc(cat ? cat.nom : (p.cat_niv_3 || 'Cobertes del sòl N3')) + '</p><dl>' +
+    rows.filter(r => r[1] !== undefined && r[1] !== null && r[1] !== '').map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl></div>';
+}
+
+let cobertesN3Estat = 'pendent';
+async function carregaCobertesN3() {
+  cobertesN3Estat = 'carregant';
+  try {
+    const r = await fetch(COBERTESN3.url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const gj = await r.json();
+    map.addSource('cobertesn3', { type: 'geojson', data: gj });
+    const abans = map.getLayer('limit-linia') ? 'limit-linia' : undefined;
+    map.addLayer({ id: 'cobertesn3-farciment', type: 'fill', source: 'cobertesn3',
+      paint: { 'fill-color': colorCobertesN3(), 'fill-opacity': 0.8 } }, abans);
+    map.addLayer({ id: 'cobertesn3-linia', type: 'line', source: 'cobertesn3',
+      paint: { 'line-color': 'rgba(30,40,35,0.35)', 'line-width': 0.4 } }, abans);
+    aplicaOpacitat('cobertes-n3-2020');
+    dadesCobertesN3 = gj.features || [];
+    actualitzaBotoTaula('cobertes-n3-2020', dadesCobertesN3.length);
+    cobertesN3Estat = 'llest';
+  } catch (e) {
+    console.error('Cobertes N3 2020:', e);
+    cobertesN3Estat = 'error';
+    const nota = document.getElementById('nota-cobertesn3');
+    nota.className = 'nota error';
+    nota.textContent = "No s'ha pogut carregar data/cobertes_n3_2020.geojson. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+  }
+}
+async function actualitzaCobertesN3() {
+  const on = document.getElementById('chk-cobertes-n3-2020').checked;
+  document.getElementById('llegenda-cobertesn3').hidden = !on;
+  if (on) pintaLlegendaCobertesN3();
+  if (on && (cobertesN3Estat === 'pendent' || cobertesN3Estat === 'error')) await carregaCobertesN3();
+  if (cobertesN3Estat === 'llest') {
+    const v = on ? 'visible' : 'none';
+    ['cobertesn3-farciment', 'cobertesn3-linia'].forEach(id => map.setLayoutProperty(id, 'visibility', v));
+  }
+}
+document.getElementById('chk-cobertes-n3-2020').addEventListener('change', actualitzaCobertesN3);
+
+/* ================= Cobertes del sòl N1F 2020 (MCSC, camp cat_niv_1f) ================= */
+const COBERTESN1F = {
+  url: 'data/cobertes_n1f_2020.geojson',
+  categories: [
+    { valor: 'Aiguamolls', nom: 'Aiguamolls', color: '#80ffff' },
+    { valor: 'Aigues continentals', nom: 'Aigues continentals', color: '#0000ff' },
+    { valor: 'Arbrat clar', nom: 'Arbrat clar', color: '#a0ffa0' },
+    { valor: 'Arbrat dens', nom: 'Arbrat dens', color: '#689010' },
+    { valor: 'Conreus', nom: 'Conreus', color: '#f4c8a4' },
+    { valor: 'Improductiu artificial', nom: 'Improductiu artificial', color: '#ffa4e2' },
+    { valor: 'Improductiu natural', nom: 'Improductiu natural', color: '#ff972f' },
+    { valor: 'Matollars', nom: 'Matollars', color: '#c0c09c' },
+    { valor: 'Prats i herbassars', nom: 'Prats i herbassars', color: '#ffff82' }
+  ],
+  gris: '#c4c9c6'
+};
+
+function colorCobertesN1F() {
+  const c = ['case'];
+  COBERTESN1F.categories.forEach(cat => { c.push(['==', ['get', 'cat_niv_1f'], cat.valor], cat.color); });
+  c.push(COBERTESN1F.gris);
+  return c;
+}
+
+function pintaLlegendaCobertesN1F() {
+  document.getElementById('cat-cobertesn1f').innerHTML = COBERTESN1F.categories
+    .map(c => '<div class="categoria" data-capa="cobertes-n1f-2020" data-camp="cat_niv_1f" data-valor="' + esc(c.valor) + '"><span class="mostra-cat" style="background:' + c.color + '"></span>' + esc(c.nom) + '</div>').join('');
+  document.getElementById('nota-cobertesn1f').textContent =
+    'Mapa de Cobertes del Sòl de Catalunya (MCSC) 2020, nivell 1F (camp cat_niv_1f).';
+}
+
+function textCobertesN1F(p) {
+  const cat = COBERTESN1F.categories.find(c => c.valor === p.cat_niv_1f);
+  const rows = [
+    ['Categoria (N1F)', cat ? cat.nom : p.cat_niv_1f],
+    ['Descripció', p.nom_simple],
+    ['Categoria N1', p.cat_niv_1],
+    ['Tipus', p.categoria_]
+  ];
+  return '<div class="popup"><p class="popup-t">' + esc(cat ? cat.nom : (p.cat_niv_1f || 'Cobertes del sòl N1F')) + '</p><dl>' +
+    rows.filter(r => r[1] !== undefined && r[1] !== null && r[1] !== '').map(r => '<dt>' + r[0] + '</dt><dd>' + esc(r[1]) + '</dd>').join('') + '</dl></div>';
+}
+
+let cobertesN1FEstat = 'pendent';
+async function carregaCobertesN1F() {
+  cobertesN1FEstat = 'carregant';
+  try {
+    const r = await fetch(COBERTESN1F.url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const gj = await r.json();
+    map.addSource('cobertesn1f', { type: 'geojson', data: gj });
+    const abans = map.getLayer('limit-linia') ? 'limit-linia' : undefined;
+    map.addLayer({ id: 'cobertesn1f-farciment', type: 'fill', source: 'cobertesn1f',
+      paint: { 'fill-color': colorCobertesN1F(), 'fill-opacity': 0.8 } }, abans);
+    map.addLayer({ id: 'cobertesn1f-linia', type: 'line', source: 'cobertesn1f',
+      paint: { 'line-color': 'rgba(30,40,35,0.35)', 'line-width': 0.4 } }, abans);
+    aplicaOpacitat('cobertes-n1f-2020');
+    dadesCobertesN1F = gj.features || [];
+    actualitzaBotoTaula('cobertes-n1f-2020', dadesCobertesN1F.length);
+    cobertesN1FEstat = 'llest';
+  } catch (e) {
+    console.error('Cobertes N3 2020:', e);
+    cobertesN1FEstat = 'error';
+    const nota = document.getElementById('nota-cobertesn1f');
+    nota.className = 'nota error';
+    nota.textContent = "No s'ha pogut carregar data/cobertes_n1f_2020.geojson. Si obres el fitxer directament (file://), cal servir la carpeta amb un servidor local.";
+  }
+}
+async function actualitzaCobertesN1F() {
+  const on = document.getElementById('chk-cobertes-n1f-2020').checked;
+  document.getElementById('llegenda-cobertesn1f').hidden = !on;
+  if (on) pintaLlegendaCobertesN1F();
+  if (on && (cobertesN1FEstat === 'pendent' || cobertesN1FEstat === 'error')) await carregaCobertesN1F();
+  if (cobertesN1FEstat === 'llest') {
+    const v = on ? 'visible' : 'none';
+    ['cobertesn1f-farciment', 'cobertesn1f-linia'].forEach(id => map.setLayoutProperty(id, 'visibility', v));
+  }
+}
+document.getElementById('chk-cobertes-n1f-2020').addEventListener('change', actualitzaCobertesN1F);
+
 /* ================= Límit d'estudi ================= */
 const LIMITESTUDI = { url: 'data/limit_estudi.geojson' };
 let limitEstudiEstat = 'pendent';
@@ -1209,6 +1412,12 @@ map.on('mousemove', e => {
   if (!sobre && document.getElementById('chk-arbrat').checked && map.getLayer('arbrat-punts')) {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['arbrat-punts'] }).length > 0;
   }
+  if (!sobre && document.getElementById('chk-cobertes-n1f-2020').checked && map.getLayer('cobertesn1f-farciment')) {
+    sobre = map.queryRenderedFeatures(e.point, { layers: ['cobertesn1f-farciment'] }).length > 0;
+  }
+  if (!sobre && document.getElementById('chk-cobertes-n3-2020').checked && map.getLayer('cobertesn3-farciment')) {
+    sobre = map.queryRenderedFeatures(e.point, { layers: ['cobertesn3-farciment'] }).length > 0;
+  }
   if (!sobre && document.getElementById('chk-mapa-base-verd').checked && map.getLayer('mapaverd-farciment')) {
     sobre = map.queryRenderedFeatures(e.point, { layers: ['mapaverd-farciment'] }).length > 0;
   }
@@ -1237,6 +1446,14 @@ map.on('click', e => {
   if (document.getElementById('chk-arbrat').checked && map.getLayer('arbrat-punts')) {
     const f = map.queryRenderedFeatures(e.point, { layers: ['arbrat-punts'] });
     if (f.length) parts.push(textArbrat(f[0].properties));
+  }
+  if (document.getElementById('chk-cobertes-n1f-2020').checked && map.getLayer('cobertesn1f-farciment')) {
+    const f = map.queryRenderedFeatures(e.point, { layers: ['cobertesn1f-farciment'] });
+    if (f.length) parts.push(textCobertesN1F(f[0].properties));
+  }
+  if (document.getElementById('chk-cobertes-n3-2020').checked && map.getLayer('cobertesn3-farciment')) {
+    const f = map.queryRenderedFeatures(e.point, { layers: ['cobertesn3-farciment'] });
+    if (f.length) parts.push(textCobertesN3(f[0].properties));
   }
   if (document.getElementById('chk-mapa-base-verd').checked && map.getLayer('mapaverd-farciment')) {
     const f = map.queryRenderedFeatures(e.point, { layers: ['mapaverd-farciment'] });
@@ -1376,6 +1593,14 @@ const OPACITAT = {
   'espais-verds': [
     { id: 'espaisverds-farciment', prop: 'fill-opacity', base: 0.85 },
     { id: 'espaisverds-linia', prop: 'line-opacity', base: 1 }
+  ],
+  'cobertes-n1f-2020': [
+    { id: 'cobertesn1f-farciment', prop: 'fill-opacity', base: 0.8 },
+    { id: 'cobertesn1f-linia', prop: 'line-opacity', base: 1 }
+  ],
+  'cobertes-n3-2020': [
+    { id: 'cobertesn3-farciment', prop: 'fill-opacity', base: 0.8 },
+    { id: 'cobertesn3-linia', prop: 'line-opacity', base: 1 }
   ],
   'mapa-base-verd': [
     { id: 'mapaverd-farciment', prop: 'fill-opacity', base: 0.8 },
@@ -1558,6 +1783,27 @@ const TAULES = {
       ['Tipus de reg', p => p.tipus_reg],
       ['Gestor', p => p.gestor],
       ['Observacions', p => p.obs]
+    ]
+  },
+  'cobertes-n1f-2020': {
+    nom: 'Cobertes del sòl N1F (2020)',
+    dades: () => dadesCobertesN1F,
+    columnes: [
+      ['Categoria (N1F)', p => p.cat_niv_1f],
+      ['Descripció', p => p.nom_simple],
+      ['Categoria N1', p => p.cat_niv_1],
+      ['Tipus', p => p.categoria_]
+    ]
+  },
+  'cobertes-n3-2020': {
+    nom: 'Cobertes del sòl N3 (2020)',
+    dades: () => dadesCobertesN3,
+    columnes: [
+      ['Categoria (N3)', p => (COBERTESN3.categories.find(c => c.valor === p.cat_niv_3) || {}).nom || p.cat_niv_3],
+      ['Descripció', p => p.nom_simple],
+      ['Categoria N1F', p => p.cat_niv_1f],
+      ['Categoria N1', p => p.cat_niv_1],
+      ['Tipus', p => p.categoria_]
     ]
   },
   'mapa-base-verd': {
