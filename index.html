@@ -136,7 +136,7 @@
   @media (max-width: 560px) { table.taula th, table.taula td { white-space: normal; } }
 
   /* Llegenda flotant de capes de dades */
-  .llegendes { position: absolute; left: 12px; bottom: 44px; z-index: 5; width: 270px; max-width: calc(100vw - 24px); display: flex; flex-direction: column; gap: 8px; }
+  .llegendes { position: absolute; left: 12px; bottom: 44px; z-index: 5; width: 330px; max-width: calc(100vw - 24px); max-height: calc(100% - 380px); overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
   .llegenda-flotant { background: var(--paper); border-radius: 8px; box-shadow: var(--ombra); padding: 12px 14px; font-size: 13px; }
   .llegenda-flotant[hidden] { display: none; }
   .llegenda-flotant h2 { margin: 0 0 8px; font-size: 13.5px; font-weight: 600; }
@@ -153,7 +153,13 @@
   .llegenda-flotant .sense { display: flex; align-items: center; gap: 8px; margin-top: 10px; }
   .mostra-transparent { width: 22px; height: 14px; border-radius: 2px; background: repeating-conic-gradient(#e3e7e5 0% 25%, #fff 0% 50%) 50% / 8px 8px; border: 1px solid rgba(0,0,0,.25); flex: none; }
   .mostra-gris { width: 22px; height: 14px; border-radius: 2px; background: #c4c9c6; border: 1px solid rgba(0,0,0,.25); flex: none; }
-  #cat-cobertesn3, #cat-cobertesn1f, #cat-cobertesn309, #cat-cobertesn1f09 { max-height: 40vh; overflow-y: auto; }
+  #cat-cobertesn3, #cat-cobertesn1f, #cat-cobertesn309, #cat-cobertesn1f09 { max-height: min(24vh, 230px); overflow-y: auto; overflow-x: hidden; }
+  #llegenda-cobertesn3, #llegenda-cobertesn1f, #llegenda-cobertesn309, #llegenda-cobertesn1f09 { padding: 8px 10px; }
+  #llegenda-cobertesn3 h2, #llegenda-cobertesn1f h2, #llegenda-cobertesn309 h2, #llegenda-cobertesn1f09 h2 { margin-bottom: 0; font-size: 14px; }
+  .llegenda-sub { margin: 0 0 6px; font-size: 12px; color: var(--tinta-suau); }
+  #llegenda-cobertesn3 .categoria, #llegenda-cobertesn1f .categoria, #llegenda-cobertesn309 .categoria, #llegenda-cobertesn1f09 .categoria { font-size: 12.5px; padding: 1.5px 4px; gap: 7px; }
+  #llegenda-cobertesn3 .nota, #llegenda-cobertesn1f .nota, #llegenda-cobertesn309 .nota, #llegenda-cobertesn1f09 .nota { font-size: 10.5px; margin-top: 4px; }
+  .llegenda-flotant .nota:empty { display: none; }
   .llegenda-flotant .nota { margin: 10px 0 0; font-size: 12px; line-height: 1.4; color: var(--tinta-suau); }
   .llegenda-flotant .error { color: #9b2c1f; }
   .maplibregl-popup-content { font-family: inherit; font-size: 13px; line-height: 1.45; padding: 12px 14px; border-radius: 8px; max-width: 280px; }
@@ -242,22 +248,26 @@
   <p class="nota" id="nota-mapabaseverd"></p>
 </div>
 <div class="llegenda-flotant" id="llegenda-cobertesn1f" hidden>
-  <h2>Cobertes del sòl N1F (2020)</h2>
+  <h2>Llegenda</h2>
+  <p class="llegenda-sub">Cobertes del sòl N1F (2020)</p>
   <div id="cat-cobertesn1f"></div>
   <p class="nota" id="nota-cobertesn1f"></p>
 </div>
 <div class="llegenda-flotant" id="llegenda-cobertesn1f09" hidden>
-  <h2>Cobertes del sòl N1F (2009)</h2>
+  <h2>Llegenda</h2>
+  <p class="llegenda-sub">Cobertes del sòl N1F (2009)</p>
   <div id="cat-cobertesn1f09"></div>
   <p class="nota" id="nota-cobertesn1f09"></p>
 </div>
 <div class="llegenda-flotant" id="llegenda-cobertesn309" hidden>
-  <h2>Cobertes del sòl N3 (2009)</h2>
+  <h2>Llegenda</h2>
+  <p class="llegenda-sub">Cobertes del sòl N3 (2009)</p>
   <div id="cat-cobertesn309"></div>
   <p class="nota" id="nota-cobertesn309"></p>
 </div>
 <div class="llegenda-flotant" id="llegenda-cobertesn3" hidden>
-  <h2>Cobertes del sòl N3 (2020)</h2>
+  <h2>Llegenda</h2>
+  <p class="llegenda-sub">Cobertes del sòl N3 (2020)</p>
   <div id="cat-cobertesn3"></div>
   <p class="nota" id="nota-cobertesn3"></p>
 </div>
@@ -976,8 +986,6 @@ function colorCobertesN3() {
 function pintaLlegendaCobertesN3() {
   document.getElementById('cat-cobertesn3').innerHTML = COBERTESN3.categories
     .map(c => '<div class="categoria" data-capa="cobertes-n3-2020" data-camp="cat_niv_3" data-valor="' + esc(c.valor) + '"><span class="mostra-cat" style="background:' + c.color + '"></span>' + esc(c.nom) + '</div>').join('');
-  document.getElementById('nota-cobertesn3').textContent =
-    'Mapa de Cobertes del Sòl de Catalunya (MCSC) 2020, nivell 3 (camp cat_niv_3).';
 }
 
 function textCobertesN3(p) {
@@ -1057,8 +1065,6 @@ function colorCobertesN1F() {
 function pintaLlegendaCobertesN1F() {
   document.getElementById('cat-cobertesn1f').innerHTML = COBERTESN1F.categories
     .map(c => '<div class="categoria" data-capa="cobertes-n1f-2020" data-camp="cat_niv_1f" data-valor="' + esc(c.valor) + '"><span class="mostra-cat" style="background:' + c.color + '"></span>' + esc(c.nom) + '</div>').join('');
-  document.getElementById('nota-cobertesn1f').textContent =
-    'Mapa de Cobertes del Sòl de Catalunya (MCSC) 2020, nivell 1F (camp cat_niv_1f).';
 }
 
 function textCobertesN1F(p) {
@@ -1127,8 +1133,6 @@ function colorCobertesN1F09() {
 function pintaLlegendaCobertesN1F09() {
   document.getElementById('cat-cobertesn1f09').innerHTML = COBERTESN1F09.categories
     .map(c => '<div class="categoria" data-capa="cobertes-n1f-2009" data-camp="cat_niv_1f" data-valor="' + esc(c.valor) + '"><span class="mostra-cat" style="background:' + c.color + '"></span>' + esc(c.nom) + '</div>').join('');
-  document.getElementById('nota-cobertesn1f09').textContent =
-    'Mapa de Cobertes del Sòl de Catalunya (MCSC) 2009, nivell 1F (camp cat_niv_1f).';
 }
 
 function textCobertesN1F09(p) {
@@ -1198,8 +1202,6 @@ function colorCobertesN309() {
 function pintaLlegendaCobertesN309() {
   document.getElementById('cat-cobertesn309').innerHTML = COBERTESN309.categories
     .map(c => '<div class="categoria" data-capa="cobertes-n3-2009" data-camp="cat_niv_3" data-valor="' + esc(c.valor) + '"><span class="mostra-cat" style="background:' + c.color + '"></span>' + esc(c.nom) + '</div>').join('');
-  document.getElementById('nota-cobertesn309').textContent =
-    'Mapa de Cobertes del Sòl de Catalunya (MCSC) 2009, nivell 3 (camp cat_niv_3).';
 }
 
 function textCobertesN309(p) {
@@ -2225,6 +2227,19 @@ document.getElementById('taula-cos').addEventListener('click', e => {
   nansa.addEventListener('pointerup', atura);
   nansa.addEventListener('pointercancel', atura);
 })();
+
+/* El panell de capes cedeix alçada a les llegendes perquè no se superposin */
+function ajustaPanell() {
+  const p = document.getElementById('panell'), l = document.querySelector('.llegendes');
+  if (!p || !l) return;
+  const alt = p.parentElement.clientHeight || window.innerHeight;
+  const llegH = l.offsetHeight;
+  const sota = llegH > 0 ? llegH + (parseFloat(getComputedStyle(l).bottom) || 44) + 8 : 60;
+  p.style.maxHeight = Math.max(300, alt - 12 - sota) + 'px';
+}
+if (window.ResizeObserver) new ResizeObserver(ajustaPanell).observe(document.querySelector('.llegendes'));
+window.addEventListener('resize', ajustaPanell);
+ajustaPanell();
 </script>
 </body>
 </html>
