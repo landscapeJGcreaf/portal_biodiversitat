@@ -183,6 +183,7 @@
   .llegenda-flotant .nota:empty { display: none; }
   .llegenda-flotant .nota { margin: 10px 0 0; font-size: 12px; line-height: 1.4; color: var(--tinta-suau); }
   .llegenda-flotant .error { color: #9b2c1f; }
+  .maplibregl-popup { z-index: 6; }   /* per damunt de la cortina del comparador */
   .maplibregl-popup-content { font-family: inherit; font-size: 13px; line-height: 1.45; padding: 12px 14px; border-radius: 8px; max-width: 280px; }
   .popup-t { margin: 0 20px 6px 0; font-weight: 600; font-size: 14px; }
   .popup-t span { display: block; font-weight: 400; font-size: 12px; color: var(--tinta-suau); }
@@ -2548,9 +2549,9 @@ const CMP = {
   nivells: {
     n1f: { color: () => colorCobertesN1F(), text: p => textCobertesN1F(p),
            anys: {
-             '2009': { url: 'data/cobertes_n1f_2009.geojson', chk: 'chk-cobertes-n1f-2009' },
-             '2015': { url: 'data/cobertes_n1f_2015.geojson', chk: 'chk-cobertes-n1f-2015' },
-             '2020': { url: 'data/cobertes_n1f_2020.geojson', chk: 'chk-cobertes-n1f-2020' }
+             '2009': { url: 'data/cobertes_n1f_2009.geojson', chk: 'chk-cobertes-n1f-2009', capa: 'cobertesn1f09-farciment' },
+             '2015': { url: 'data/cobertes_n1f_2015.geojson', chk: 'chk-cobertes-n1f-2015', capa: 'cobertesn1f15-farciment' },
+             '2020': { url: 'data/cobertes_n1f_2020.geojson', chk: 'chk-cobertes-n1f-2020', capa: 'cobertesn1f-farciment' }
            } }
   },
   ids: ['chk-cobertes-n3-2009', 'chk-cobertes-n3-2015', 'chk-cobertes-n3-2020', 'chk-cobertes-n1f-2009', 'chk-cobertes-n1f-2015', 'chk-cobertes-n1f-2020'],
@@ -2690,11 +2691,20 @@ document.addEventListener('click', e => { if (CMP.actiu && !e.target.closest('.c
   });
 })();
 window.addEventListener('resize', () => { if (CMP.actiu) { CMP.mapaB.resize(); cmpPosiciona(CMP.x); } });
-// A la dreta de la cortina es mostra l'any de la dreta: el clic hi consulta el mapa B
+// Amb el comparador actiu, el clic mostra la cobertura dels dos anys comparats (esquerra: mapa principal; dreta: mapa B)
 function cmpPopupDreta(e) {
-  if (!CMP.actiu || !CMP.mapaB || e.point.x <= CMP.x) return false;
-  const f = CMP.mapaB.queryRenderedFeatures(e.point, { layers: ['cmp-farciment'] });
-  if (f.length) new maplibregl.Popup({ maxWidth: '280px' }).setLngLat(e.lngLat).setHTML(CMP.nivells[CMP.nivell].text(f[0].properties)).addTo(map);
+  if (!CMP.actiu || !CMP.mapaB) return false;
+  const n = CMP.nivells[CMP.nivell];
+  const llegeix = (mapa, capa) => {
+    const f = mapa.getLayer(capa) ? mapa.queryRenderedFeatures(e.point, { layers: [capa] }) : [];
+    return f.length ? f[0].properties : null;
+  };
+  const fila = (any, p) => '<dt>' + any + '</dt><dd>' + (p ? esc(p.cat_niv_1f) : '<span style="color:#7a8a82">Sense dada</span>') + '</dd>';
+  const pe = llegeix(map, n.anys[CMP.anys.esq].capa), pd = llegeix(CMP.mapaB, 'cmp-farciment');
+  if (!pe && !pd) return true;
+  new maplibregl.Popup({ maxWidth: '300px' }).setLngLat(e.lngLat).setHTML(
+    '<div class="popup"><p class="popup-t">Cobertes del sòl N1F</p><dl>' +
+    fila(CMP.anys.esq, pe) + fila(CMP.anys.dre, pd) + '</dl></div>').addTo(map);
   return true;
 }
 
