@@ -140,6 +140,24 @@
       "persona": "Javier Gordillo",
       "email": "j.gordillo@creaf.uab.cat"
     },
+    "index-biodiversitat-singular": {
+      "titol": "Índex de biodiversitat singular",
+      "resum": "",
+      "categoriaTematica": "Medi ambient",
+      "dataReferencia": "",
+      "tipusData": "",
+      "estat": "Pendent d'incorporar al visor",
+      "frequenciaActualitzacio": "",
+      "tipusRepresentacio": "Vectorial",
+      "format": "",
+      "sistemaReferencia": "",
+      "resolucio": "",
+      "extensio": "Municipi de Viladecans",
+      "procedencia": "",
+      "llicencia": "",
+      "restriccionsUs": "",
+      "enllacos": []
+    },
     "chc": {
       "titol": "Hàbitats de Catalunya (CHC)",
       "resum": "",
