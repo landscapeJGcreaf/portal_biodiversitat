@@ -427,7 +427,7 @@
     },
     "cobertes-n3-2009": {
       "titol": "Mapa de Cobertes del Sòl de Catalunya MCSC cat. N3 (2009)",
-      "resum": "Mapa de Cobertes del Sòl de Catalunya (MCSC) del municipi de Viladecans, any 2009, nivell 3 de classificació. Cada polígon porta la categoria de nivell 3 i les categories de nivells 1F i 1.",
+      "resum": "Mapa de Cobertes del Sòl de Catalunya (MCSC) del municipi de Viladecans, any 2009, nivell 3 de classificació. Cada polígon porta la categoria de nivell 3 i les categories de nivells 1F i 1. Nota: les edicions 2009 i 2020 del MCSC no apliquen exactament els mateixos criteris de delimitació ni de classificació. L'urbà està molt més fragmentat el 2009 i algunes categories només existen en un any (p. ex. la xarxa viària: «Grans vials i zones d'aparcament» el 2009; «Carreteres», «Autopistes i autovies» i «Vies de ferrocarril» el 2020). Cal interpretar amb cautela les diferències entre anys.",
       "categoriaTematica": "Medi ambient",
       "dataReferencia": "2009",
       "tipusData": "",
@@ -448,7 +448,7 @@
     },
     "cobertes-n3-2020": {
       "titol": "Mapa de Cobertes del Sòl de Catalunya MCSC cat. N3 (2020)",
-      "resum": "Mapa de Cobertes del Sòl de Catalunya (MCSC) del municipi de Viladecans, any 2020, nivell 3 de classificació (41 categories). Cada polígon porta la categoria de nivell 3, una descripció simplificada i les categories de nivells 1 i 1F.",
+      "resum": "Mapa de Cobertes del Sòl de Catalunya (MCSC) del municipi de Viladecans, any 2020, nivell 3 de classificació (41 categories). Cada polígon porta la categoria de nivell 3, una descripció simplificada i les categories de nivells 1 i 1F. Nota: les edicions 2009 i 2020 del MCSC no apliquen exactament els mateixos criteris de delimitació ni de classificació. L'urbà està molt més fragmentat el 2009 i algunes categories només existen en un any (p. ex. la xarxa viària: «Grans vials i zones d'aparcament» el 2009; «Carreteres», «Autopistes i autovies» i «Vies de ferrocarril» el 2020). Cal interpretar amb cautela les diferències entre anys.",
       "categoriaTematica": "Medi ambient",
       "dataReferencia": "2020",
       "tipusData": "",

@@ -81,21 +81,23 @@
   .cmp-boto:hover { background: #eef2ef; }
   .cmp-boto[aria-pressed="true"] { background: var(--verd); color: #fff; border-color: var(--verd); }
   .cmp-text { font-size: 12px; color: var(--tinta-suau); }
-  .cmp-panell[hidden] { display: none; }
-  .cmp-panell { margin: 6px 0 8px; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
-  .cmp-panell button { border: 1px solid var(--linia); background: var(--paper); border-radius: 6px; padding: 5px 10px; font: inherit; font-size: 13px; cursor: pointer; color: var(--tinta); }
-  .cmp-panell button:hover { background: #eef2ef; }
-  .cmp-panell button[aria-pressed="true"] { background: var(--verd); color: #fff; border-color: var(--verd); }
-  .cmp-panell .cmp-opcions { display: flex; gap: 4px; }
-  .cmp-panell .cmp-opcions[hidden] { display: none; }
   #map-b { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
   #map-b[hidden], #cmp-barra[hidden] { display: none; }
   #cmp-barra { position: absolute; top: 0; bottom: 0; left: 50%; width: 0; z-index: 4; pointer-events: none; }
   #cmp-barra::before { content: ''; position: absolute; top: 0; bottom: 0; left: -1.5px; width: 3px; background: #fff; box-shadow: 0 0 4px rgba(0,0,0,.45); }
   .cmp-grip { position: absolute; top: 50%; left: -18px; width: 36px; height: 36px; margin-top: -18px; border-radius: 50%; background: #fff; box-shadow: 0 1px 6px rgba(0,0,0,.5); cursor: ew-resize; pointer-events: auto; touch-action: none; }
   .cmp-grip::before { content: '\2194'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 18px; color: var(--tinta); }
-  .cmp-etq { position: absolute; top: 14px; padding: 3px 10px; border-radius: 6px; background: var(--paper); box-shadow: var(--ombra); font-size: 13px; font-weight: 600; white-space: nowrap; }
-  .cmp-etq.esq { right: 12px; } .cmp-etq.dre { left: 12px; }
+  .cmp-costat { position: absolute; top: 14px; pointer-events: auto; }
+  .cmp-costat.esq { right: 12px; } .cmp-costat.dre { left: 12px; }
+  .cmp-etq { padding: 4px 10px; border: 0; border-radius: 6px; background: var(--paper); box-shadow: var(--ombra); font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer; color: var(--tinta); }
+  .cmp-etq::after { content: ' \25BE'; font-size: 11px; color: var(--tinta-suau); }
+  .cmp-etq:hover, .cmp-etq[aria-expanded="true"] { background: #eef2ef; }
+  .cmp-menu { position: absolute; top: 100%; margin-top: 4px; min-width: 70px; background: var(--paper); border-radius: 6px; box-shadow: var(--ombra); overflow: hidden; }
+  .cmp-costat.esq .cmp-menu { right: 0; } .cmp-costat.dre .cmp-menu { left: 0; }
+  .cmp-menu[hidden] { display: none; }
+  .cmp-menu button { display: block; width: 100%; border: 0; background: none; padding: 6px 12px; font: inherit; font-size: 13px; text-align: left; cursor: pointer; color: var(--tinta); }
+  .cmp-menu button:hover { background: #eef2ef; }
+  .cmp-menu button[aria-selected="true"] { background: var(--verd); color: #fff; }
 
   .coords { position: absolute; left: 12px; bottom: 12px; z-index: 5; background: rgba(251,252,250,.92); padding: 4px 10px; border-radius: 6px; font-size: 12px; color: var(--tinta-suau); font-variant-numeric: tabular-nums; }
 
@@ -212,7 +214,8 @@
 <div id="map" role="application" aria-label="Mapa de Viladecans"></div>
 <div id="map-b" aria-hidden="true" hidden></div>
 <div id="cmp-barra" hidden>
-  <span class="cmp-etq esq">2009</span><span class="cmp-etq dre">2020</span>
+  <div class="cmp-costat esq"><button type="button" class="cmp-etq" data-costat="esq" aria-haspopup="listbox" aria-expanded="false" title="Canvia l'any"></button><div class="cmp-menu" role="listbox" hidden></div></div>
+  <div class="cmp-costat dre"><button type="button" class="cmp-etq" data-costat="dre" aria-haspopup="listbox" aria-expanded="false" title="Canvia l'any"></button><div class="cmp-menu" role="listbox" hidden></div></div>
   <div class="cmp-grip" role="slider" aria-label="Posició de la cortina" aria-valuemin="0" aria-valuemax="100" tabindex="0"></div>
 </div>
 <div id="estat" class="estat">Carregant dades…</div>
@@ -599,16 +602,9 @@ document.getElementById('grups').innerHTML = GRUPS.map(g => htmlGrup(g, 0)).join
   if (!sum) return;
   const boto = document.createElement('button');
   boto.type = 'button'; boto.id = 'cmp-obre'; boto.className = 'cmp-boto'; boto.textContent = "Compara'm";
-  boto.setAttribute('aria-pressed', 'false'); boto.title = 'Compara el 2009 i el 2020 amb una cortina';
+  boto.setAttribute('aria-pressed', 'false'); boto.title = 'Compara el 2009 i el 2020 (N1F) amb una cortina';
   boto.addEventListener('click', e => e.preventDefault());   // no plega/desplega el grup
   sum.appendChild(boto);
-  const div = document.createElement('div');
-  div.className = 'cmp-panell';
-  div.innerHTML = '<span class="cmp-text">Nivell:</span><div class="cmp-opcions" id="cmp-opcions" hidden>' +
-    '<button type="button" data-nivell="n3" aria-pressed="true">N3</button>' +
-    '<button type="button" data-nivell="n1f" aria-pressed="false">N1F</button></div>';
-  div.hidden = true;
-  sum.parentElement.querySelector('.grup-cos').prepend(div);
 })();
 
 /* ================= Mapa ================= */
@@ -2360,16 +2356,19 @@ function ajustaPanell() {
 if (window.ResizeObserver) new ResizeObserver(ajustaPanell).observe(document.querySelector('.llegendes'));
 window.addEventListener('resize', ajustaPanell);
 ajustaPanell();
-/* ================= Comparador de cobertes (cortina 2009 | 2020) ================= */
+/* ================= Comparador de cobertes (cortina entre dos anys) ================= */
 const CMP = {
+  // Anys disponibles per nivell: per afegir-ne un (p. ex. 2015) només cal una entrada nova aquí i la seva capa al panell.
   nivells: {
-    n3:  { url: 'data/cobertes_n3_2020.geojson',  color: () => colorCobertesN3(),  text: p => textCobertesN3(p),
-           chk2009: 'chk-cobertes-n3-2009',  chk2020: 'chk-cobertes-n3-2020' },
-    n1f: { url: 'data/cobertes_n1f_2020.geojson', color: () => colorCobertesN1F(), text: p => textCobertesN1F(p),
-           chk2009: 'chk-cobertes-n1f-2009', chk2020: 'chk-cobertes-n1f-2020' }
+    n1f: { color: () => colorCobertesN1F(), text: p => textCobertesN1F(p),
+           anys: {
+             '2009': { url: 'data/cobertes_n1f_2009.geojson', chk: 'chk-cobertes-n1f-2009' },
+             '2020': { url: 'data/cobertes_n1f_2020.geojson', chk: 'chk-cobertes-n1f-2020' }
+           } }
   },
   ids: ['chk-cobertes-n3-2009', 'chk-cobertes-n3-2020', 'chk-cobertes-n1f-2009', 'chk-cobertes-n1f-2020'],
-  actiu: false, nivell: 'n3', x: 0, guardat: null, mapaB: null, sincronitzat: false
+  anys: { esq: '2009', dre: '2020' },     // any mostrat a cada costat de la cortina
+  actiu: false, nivell: 'n1f', x: 0, guardat: null, mapaB: null, sincronitzat: false
 };
 const cmpBarra = document.getElementById('cmp-barra'), cmpDiv = document.getElementById('map-b');
 
@@ -2416,7 +2415,7 @@ function cmpPosaCapaB() {
   const m = CMP.mapaB, n = CMP.nivells[CMP.nivell];
   ['cmp-linia', 'cmp-farciment'].forEach(id => m.getLayer(id) && m.removeLayer(id));
   if (m.getSource('cmp')) m.removeSource('cmp');
-  m.addSource('cmp', { type: 'geojson', data: n.url });
+  m.addSource('cmp', { type: 'geojson', data: n.anys[CMP.anys.dre].url });
   const abans = m.getLayer('limit-linia') ? 'limit-linia' : undefined;
   m.addLayer({ id: 'cmp-farciment', type: 'fill', source: 'cmp', paint: { 'fill-color': n.color(), 'fill-opacity': 0.8 } }, abans);
   m.addLayer({ id: 'cmp-linia', type: 'line', source: 'cmp', paint: { 'line-color': 'rgba(30,40,35,0.35)', 'line-width': 0.4 } }, abans);
@@ -2424,7 +2423,7 @@ function cmpPosaCapaB() {
 function cmpPosaCheckboxes() {
   const n = CMP.nivells[CMP.nivell];
   CMP.ids.forEach(id => {
-    const c = document.getElementById(id), volt = id === n.chk2009;
+    const c = document.getElementById(id), volt = id === n.anys[CMP.anys.esq].chk;
     if (c.checked !== volt) { c.checked = volt; c.dispatchEvent(new Event('change', { bubbles: true })); }
   });
 }
@@ -2432,11 +2431,10 @@ async function cmpActiva() {
   CMP.guardat = CMP.ids.map(id => [id, document.getElementById(id).checked]);
   CMP.actiu = true;
   document.getElementById('cmp-obre').setAttribute('aria-pressed', 'true');
-  document.getElementById('cmp-opcions').hidden = false;
-  document.querySelector('.cmp-panell').hidden = false;
   const det = document.getElementById('cmp-obre').closest('details'); if (det) det.open = true;
   esborraSeleccio();
   cmpPosaCheckboxes();
+  cmpPintaEtiquetes();
   await cmpPreparaMapaB();
   cmpDiv.hidden = false; cmpBarra.hidden = false;
   CMP.mapaB.resize();
@@ -2448,8 +2446,6 @@ async function cmpActiva() {
 function cmpDesactiva() {
   CMP.actiu = false;
   document.getElementById('cmp-obre').setAttribute('aria-pressed', 'false');
-  document.getElementById('cmp-opcions').hidden = true;
-  document.querySelector('.cmp-panell').hidden = true;
   cmpDiv.hidden = true; cmpBarra.hidden = true;
   (CMP.guardat || []).forEach(([id, v]) => {
     const c = document.getElementById(id);
@@ -2458,13 +2454,41 @@ function cmpDesactiva() {
   CMP.guardat = null;
 }
 document.getElementById('cmp-obre').addEventListener('click', () => { CMP.actiu ? cmpDesactiva() : cmpActiva(); });
-document.querySelectorAll('#cmp-opcions button').forEach(b => b.addEventListener('click', () => {
-  if (!CMP.actiu || CMP.nivell === b.dataset.nivell) return;
-  CMP.nivell = b.dataset.nivell;
-  document.querySelectorAll('#cmp-opcions button').forEach(x => x.setAttribute('aria-pressed', x === b));
+
+// Etiquetes d'any clicables: canvien l'any de cada costat de la cortina
+function cmpTancaMenus() {
+  cmpBarra.querySelectorAll('.cmp-menu').forEach(m => m.hidden = true);
+  cmpBarra.querySelectorAll('.cmp-etq').forEach(b => b.setAttribute('aria-expanded', 'false'));
+}
+function cmpPintaEtiquetes() {
+  const anys = Object.keys(CMP.nivells[CMP.nivell].anys);
+  cmpBarra.querySelectorAll('.cmp-costat').forEach(c => {
+    const costat = c.classList.contains('esq') ? 'esq' : 'dre';
+    c.querySelector('.cmp-etq').textContent = CMP.anys[costat];
+    c.querySelector('.cmp-menu').innerHTML = anys.map(a =>
+      '<button type="button" role="option" data-any="' + a + '" aria-selected="' + (a === CMP.anys[costat]) + '">' + a + '</button>').join('');
+  });
+}
+function cmpCanviaAny(costat, any) {
+  const altre = costat === 'esq' ? 'dre' : 'esq';
+  if (CMP.anys[costat] === any) return;
+  if (CMP.anys[altre] === any) CMP.anys[altre] = CMP.anys[costat];   // si coincideix amb l'altre costat, s'intercanvien
+  CMP.anys[costat] = any;
+  cmpPintaEtiquetes();
+  esborraSeleccio();
   cmpPosaCheckboxes();
   cmpPosaCapaB();
-}));
+}
+cmpBarra.addEventListener('click', e => {
+  const et = e.target.closest('.cmp-etq'), op = e.target.closest('.cmp-menu button');
+  if (op) { cmpCanviaAny(op.closest('.cmp-costat').classList.contains('esq') ? 'esq' : 'dre', op.dataset.any); cmpTancaMenus(); return; }
+  if (et) {
+    const menu = et.parentElement.querySelector('.cmp-menu'), obrir = menu.hidden;
+    cmpTancaMenus();
+    menu.hidden = !obrir; et.setAttribute('aria-expanded', obrir);
+  }
+});
+document.addEventListener('click', e => { if (CMP.actiu && !e.target.closest('.cmp-costat')) cmpTancaMenus(); });
 // arrossegament de la cortina
 (() => {
   const grip = cmpBarra.querySelector('.cmp-grip');
@@ -2479,7 +2503,7 @@ document.querySelectorAll('#cmp-opcions button').forEach(b => b.addEventListener
   });
 })();
 window.addEventListener('resize', () => { if (CMP.actiu) { CMP.mapaB.resize(); cmpPosiciona(CMP.x); } });
-// A la dreta de la cortina es mostra el 2020: el clic hi consulta el mapa B
+// A la dreta de la cortina es mostra l'any de la dreta: el clic hi consulta el mapa B
 function cmpPopupDreta(e) {
   if (!CMP.actiu || !CMP.mapaB || e.point.x <= CMP.x) return false;
   const f = CMP.mapaB.queryRenderedFeatures(e.point, { layers: ['cmp-farciment'] });
